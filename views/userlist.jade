@@ -1,0 +1,51 @@
+extends layout
+block ref
+	link(rel='stylesheet', href='/stylesheets/style.css')
+	script(src='/javascripts/userlist.js',type="text/javascript")
+	script(src='/stylesheets/bower_components/highcharts/highstock.js',type="text/javascript")
+
+block content
+	div.container
+		div.row
+			div.col-md-6.containerCircle
+				span Humidity
+				.circle
+				#humidity
+				
+			
+			div.col-md-6.containerCircle
+				span Temperature
+				.circle2
+				#temperature
+				
+			
+		div#graph(style="min-width: 310px; height: 400px; margin: 0 auto;backgound-color: blue")
+
+		h1.te
+		
+		
+
+		//- table#tb
+		//- 	each user, i in userlist
+		//- 		tr
+		//- 			td #{user.time}
+		//- 			td #{user.temp}
+		
+		//- table#tb
+		//- 	each item, l in datelist
+		//- 		tr
+		//- 			td #{item.name}
+					
+		form(action="http://localhost:3000/chooseDate",method="post")
+			select.form-control#dateChoice(name="dateForm")
+				each item, l in datelist
+						option(value="#{item.name}") #{item.name}
+			input.btn.btn-default.btn-block(type="submit",name="submitDate",value="submit")
+		//- div.selecter.closed
+		//- 	select.selecter-element.selecter_basic
+		//- 		each item, l in datelist
+		//- 			option(value="#{item.name}") #{item.name}
+		//- 	span.selecter-selected 
+		//- 	div.selecter-options(style="display:none")
+		//- 		each item, l in datelist
+		//- 			span.selecter-item(data-value="#{item.name}") #{item.name}

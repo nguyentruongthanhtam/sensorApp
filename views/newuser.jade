@@ -1,0 +1,17 @@
+extends layout
+
+block content
+	h1 #{title}	
+	table
+		thead
+			tr
+				th Time
+				th Temp
+				th ATemp
+				th Humidity
+		tbody
+			each entry, i in newuser 
+				tr 
+					th #{entry.time}
+					th #{entry.temp}
+	div#container(style="min-width: 310px; height: 400px; margin: 0 auto")

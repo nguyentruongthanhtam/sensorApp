@@ -1,0 +1,90 @@
+body {
+
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#606c88+0,3f4c6b+100;Grey+3D+%232 */
+/* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#565e72+0,3a4358+100 */
+background: rgb(86,94,114); /* Old browsers */
+background: -moz-radial-gradient(center, ellipse cover, rgba(86,94,114,1) 0%, rgba(58,67,88,1) 100%); /* FF3.6-15 */
+background: -webkit-radial-gradient(center, ellipse cover, rgba(86,94,114,1) 0%,rgba(58,67,88,1) 100%); /* Chrome10-25,Safari5.1-6 */
+background: radial-gradient(ellipse at center, rgba(86,94,114,1) 0%,rgba(58,67,88,1) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#565e72', endColorstr='#3a4358',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
+}
+
+a {
+  color: #00B7FF;
+}
+
+.containerCircle
+{
+	height: 400px;
+	/*min-width:300px; */
+	margin 0 auto; 
+	padding-top: 20px;
+	padding-bottom: 20px;	
+	color: rgba(149, 165, 166,.8);
+}
+.circle
+{
+
+	width: 340px;
+	height: 340px;
+	min-width: 340px;
+	min-height: 340px;
+	/*background-color: #2ecc71;*/
+	border-radius:50%;
+	margin: 0 auto;
+	opacity: 0.5;
+	/* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#2ffb62+0,13e544+36,03ad2e+100 */
+background: rgb(47,251,98); /* Old browsers */
+background: -moz-linear-gradient(-45deg,  rgba(47,251,98,1) 0%, rgba(19,229,68,1) 36%, rgba(3,173,46,1) 100%); /* FF3.6-15 */
+background: -webkit-linear-gradient(-45deg,  rgba(47,251,98,1) 0%,rgba(19,229,68,1) 36%,rgba(3,173,46,1) 100%); /* Chrome10-25,Safari5.1-6 */
+background: linear-gradient(135deg,  rgba(47,251,98,1) 0%,rgba(19,229,68,1) 36%,rgba(3,173,46,1) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2ffb62', endColorstr='#03ad2e',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
+
+}
+.circle2
+{
+	width: 340px;
+	height: 340px;
+	min-width: 340px;
+	min-height: 340px;
+	/*background-color: #2ecc71;*/
+	border-radius:50%;
+	margin: 0 auto;
+	z-index: 1;
+	opacity: 0.5;
+		/* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#2cfcfc+0,0fe9e5+37,03abab+100 */
+background: rgb(44,252,252); /* Old browsers */
+background: -moz-linear-gradient(-45deg,  rgba(44,252,252,1) 0%, rgba(15,233,229,1) 37%, rgba(3,171,171,1) 100%); /* FF3.6-15 */
+background: -webkit-linear-gradient(-45deg,  rgba(44,252,252,1) 0%,rgba(15,233,229,1) 37%,rgba(3,171,171,1) 100%); /* Chrome10-25,Safari5.1-6 */
+background: linear-gradient(135deg,  rgba(44,252,252,1) 0%,rgba(15,233,229,1) 37%,rgba(3,171,171,1) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2cfcfc', endColorstr='#03abab',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
+}
+#humidity,#temperature
+{
+	min-width: 300px;
+	min-height: 300px;
+	width: 300px;
+	height: 300px;
+	background-color: rgba(236, 240, 241,.3);
+	line-height: 300px;
+	font-family: sans-serif;
+	text-align: center;
+	vertical-align: middle;
+	border-radius:50%;
+	font-size: 52pt;
+	margin: 0 auto;
+	position: relative;	
+	top: -320px;
+	color: rgba(52, 73, 94,1.0);
+}
+.containerCircle span
+{
+		font-size: 15pt;
+		width: 100%;
+		text-align: center;
+		margin: 0 auto;
+		position: relative;
+		display: block;
+		font-family: sans-serif;
+}
