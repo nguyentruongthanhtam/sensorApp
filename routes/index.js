@@ -70,7 +70,7 @@ router.post('/chooseDate',function(req,res)
 					});
 					output = items;
 					
-  					console.log(output);
+  					//console.log(output);
 				});	
    		 });
 
