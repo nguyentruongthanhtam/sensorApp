@@ -11,7 +11,9 @@ socket.on('tempOut',function(data)
     });
 
 $(function () { 
-    
+    $('.slider').slider().on('slideStop',function(ev){
+        console.log("min"+$('.slider').slider('getValue'));
+    });
 /**
  * Dark theme for Highcharts JS
  * @author Torstein Honsi
