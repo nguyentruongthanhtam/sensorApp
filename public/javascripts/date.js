@@ -1,4 +1,4 @@
-var socket = io.connect('http://localhost:3000');
+var socket = io.connect('http://192.168.11.8:8080');
 // var fetchData;
 
 
