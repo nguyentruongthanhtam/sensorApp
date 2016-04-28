@@ -33,7 +33,9 @@ var io = require('socket.io')(server);
   console.log("Sending value from server... "+sensortag.temp);
   setInterval(function(){
     socket.emit('tempOut',{temp: sensortag.temp,
-                            humi: sensortag.humi});
+                            humi: sensortag.humi,
+                            lux: sensortag.lux
+                          });
   },1000);
 
   });

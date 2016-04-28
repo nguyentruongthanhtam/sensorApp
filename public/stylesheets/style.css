@@ -51,7 +51,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2ffb62', end
 	/*background-color: #2ecc71;*/
 	border-radius:50%;
 	margin: 0 auto;
-	z-index: 1;
+	
 	opacity: 0.5;
 		/* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#2cfcfc+0,0fe9e5+37,03abab+100 */
 background: rgb(44,252,252); /* Old browsers */
@@ -60,7 +60,7 @@ background: -webkit-linear-gradient(-45deg,  rgba(44,252,252,1) 0%,rgba(15,233,2
 background: linear-gradient(135deg,  rgba(44,252,252,1) 0%,rgba(15,233,229,1) 37%,rgba(3,171,171,1) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
 filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2cfcfc', endColorstr='#03abab',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
 }
-#humidity,#temperature
+#humidity,#temperature,#luxometer
 {
 	min-width: 300px;
 	min-height: 300px;
@@ -72,10 +72,11 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2cfcfc', end
 	text-align: center;
 	vertical-align: middle;
 	border-radius:50%;
-	font-size: 52pt;
+	font-size: 50pt;
 	margin: 0 auto;
 	position: relative;	
 	top: -320px;
+	
 	color: rgba(52, 73, 94,1.0);
 }
 .containerCircle span

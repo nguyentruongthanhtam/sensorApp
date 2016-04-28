@@ -5,9 +5,18 @@ var socket = io.connect('http://localhost:3000');
 
 socket.on('tempOut',function(data)
     {
-        console.log(data.humi);
+        console.log(data.lux);
         $("#humidity").text(data.humi);
          $("#temperature").text(data.temp);
+         // $("#luxometer").text(data.lux);
+         if(Number(data.lux) > 0)
+         {
+            $("#luxometer").text("OPENED");
+         }
+         else
+         {
+            $("#luxometer").text("CLOSED");
+         }
     });
 
 $(function () { 

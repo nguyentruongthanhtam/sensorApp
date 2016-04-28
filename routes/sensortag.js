@@ -24,7 +24,7 @@
 	by Tom Igoe
 */
 
-
+var async = require('async');
 var SensorTag = require('sensortag');// sensortag library
 var MongoClient = require('mongodb').MongoClient;
 var assert = require('assert');
@@ -59,6 +59,39 @@ function getDayTime(gDate)
 //---------------
 // listen for tags:
 SensorTag.discover(function(tag) {
+
+	// tag.readSystemId(function(systemId){
+	// 	console.log(systemId);
+	// });
+	// async.series([
+ //      function(callback) {
+ //        console.log('connectAndSetUp');
+ //        tag.connectAndSetUp(
+ //      },
+ //      function(callback) {
+ //        console.log('readDeviceName');
+ //        tag.readDeviceName(function(error, deviceName) {
+ //          console.log('\tdevice name = ' + deviceName);
+ //          callback();
+ //        });
+ //      },
+ //      function(callback) {
+ //        console.log('readSystemId');
+ //        tag.readSystemId(function(error, systemId) {
+ //          console.log('\tsystem id = ' + systemId);
+ //          callback();
+ //        });
+ //      },
+ //      function(callback) {
+ //        console.log('readSerialNumber');
+ //        tag.readSerialNumber(function(error, serialNumber) {
+ //          console.log('\tserial number = ' + serialNumber);
+ //          callback();
+ //        });
+ //      }
+ //      ]);
+
+
 	// when you disconnect from a tag, exit the program:
 	tag.on('disconnect', function() {
 		console.log('disconnected!');
@@ -68,22 +101,36 @@ SensorTag.discover(function(tag) {
 	function connectAndSetUpMe() {			// attempt to connect to the tag
      console.log('connectAndSetUp');
      tag.connectAndSetUp(enableIrTempMe);		// when you connect, call enableIrTempMe
+   
    }
 
    function enableIrTempMe() {		// attempt to enable the IR Temperature sensor
      console.log('enableIRTemperatureSensor');
      // when you enable the IR Temperature sensor, start notifications:
      // tag.enableIrTemperature();
-     tag.enableHumidity(notifyMe);
+     tag.enableHumidity(tag.enableLuxometer(notifyMe));
+     
+
    }
 
 	function notifyMe() {
+		console.log('Services have started !...');
+		console.log('Humidity sensor Enabled !...');
+		console.log('Temperature sensor Enabled !...');
+		tag.unnotifySimpleKey();
 		tag.notifyHumidity(listenForHumidity);
-   	// tag.notifyIrTemperature(listenForTempReading);   	// start the accelerometer listener
-		tag.notifySimpleKey(listenForButton);		// start the button listener
-		
+		console.log('Luxometer have started!...');
+		tag.notifyLuxometer(listenForLuxometer);
    }
-
+   function listenForLuxometer(){
+   		// Listen for Luxometer 
+   		tag.on('luxometerChange', function(lux){
+   			console.log('lux value = ',lux);
+   			module.exports.lux = lux.toFixed(1);
+   			
+	
+   		});
+   }
    // When you get an accelermeter change, print it out:
 	function listenForTempReading() {
 		tag.on('irTemperatureChange', function(objectTemp, ambientTemp) {
@@ -143,20 +190,33 @@ SensorTag.discover(function(tag) {
 	// when you get a button change, print it out:
 	function listenForButton() {
 		tag.on('simpleKeyChange', function(left, right) {
+			
 			if (left) {
-				console.log('left: ' + left);
+				console.log("Device: "+tag.type+" with id of: "+tag.id+"\n");
+				console.log('left button PRESSED!');
 			}
 			if (right) {
-				console.log('right: ' + right);
+				console.log("Device: "+tag.type+" with id of: "+tag.id+"\n");
+				console.log('right button PRESSED!');
 			}
 			// if both buttons are pressed, disconnect:
 			if (left && right) {
-				tag.disconnect();
+				console.log("Device: "+tag.type+" with id of: "+tag.id+" connected !");
+				enableIrTempMe();
+				// tag.disconnect();
+
 			}
 	   });
 	}
 
+
 	// Now that you've defined all the functions, start the process:
-	connectAndSetUpMe();
+	tag.connectAndSetUp(
+		function(){
+
+        	console.log("Sensor ID: ",tag.id,"Sensor Type: ",tag.type);
+     		tag.notifySimpleKey(listenForButton); // start the button listener);   	
+        });
+	 
 	
 });
