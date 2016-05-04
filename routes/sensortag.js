@@ -29,9 +29,20 @@ var SensorTag = require('sensortag');// sensortag library
 var MongoClient = require('mongodb').MongoClient;
 var assert = require('assert');
 var ObjectId = require('mongodb').ObjectID;
-var url = 'mongodb://localhost:27017/sensorApp';
+var ip = "192.168.11.3";
+var url = 'mongodb://'+ip+':27017/sensorApp';
+var www = require('../bin/www');
 
+console.log(www.io);
+// www.io.on('connection',function(socket){
+// 	socket.removeAllListeners();
+// 	socket.on('connect',function(data){
 
+// 		console.log('Connect state : ',data.state);
+// 	});
+// 	console.log("Device: "+tag.type+" with id of: "+tag.id+" connected !");
+// 	enableIrTempMe();
+// })
 //---------------
 function addZero(i) {
     if (i < 10) {
@@ -60,37 +71,6 @@ function getDayTime(gDate)
 // listen for tags:
 SensorTag.discover(function(tag) {
 
-	// tag.readSystemId(function(systemId){
-	// 	console.log(systemId);
-	// });
-	// async.series([
- //      function(callback) {
- //        console.log('connectAndSetUp');
- //        tag.connectAndSetUp(
- //      },
- //      function(callback) {
- //        console.log('readDeviceName');
- //        tag.readDeviceName(function(error, deviceName) {
- //          console.log('\tdevice name = ' + deviceName);
- //          callback();
- //        });
- //      },
- //      function(callback) {
- //        console.log('readSystemId');
- //        tag.readSystemId(function(error, systemId) {
- //          console.log('\tsystem id = ' + systemId);
- //          callback();
- //        });
- //      },
- //      function(callback) {
- //        console.log('readSerialNumber');
- //        tag.readSerialNumber(function(error, serialNumber) {
- //          console.log('\tserial number = ' + serialNumber);
- //          callback();
- //        });
- //      }
- //      ]);
-
 
 	// when you disconnect from a tag, exit the program:
 	tag.on('disconnect', function() {
@@ -108,7 +88,7 @@ SensorTag.discover(function(tag) {
      console.log('enableIRTemperatureSensor');
      // when you enable the IR Temperature sensor, start notifications:
      // tag.enableIrTemperature();
-     tag.enableHumidity(tag.enableLuxometer(notifyMe));
+     tag.enableHumidity(tag.enableLuxometer(tag.enableAccelerometer(notifyMe)));
      
 
    }
@@ -119,9 +99,24 @@ SensorTag.discover(function(tag) {
 		console.log('Temperature sensor Enabled !...');
 		tag.unnotifySimpleKey();
 		tag.notifyHumidity(listenForHumidity);
-		console.log('Luxometer have started!...');
+		console.log('Luxometer has started!...');
 		tag.notifyLuxometer(listenForLuxometer);
+
+		console.log('Accelerometer has started!...');
+		tag.notifyAccelerometer(listenForAccelerometer);
    }
+   function listenForAccelerometer(){
+   		// Listen for Luxometer 
+   		tag.on('accelerometerChange', function(x, y, z){
+   			console.log('x: ',x.toFixed(1));
+   			console.log('y: ',y.toFixed(1));
+   			console.log('z: ',z.toFixed(1));
+   			module.exports.acc = x.toFixed(1) +" "+ y.toFixed(1)+ " " + z.toFixed(1);
+   			// module.exports.acc = (Number(x.toFixed(1))+ Number(y.toFixed(1))+ Number(z.toFixed(1))).toFixed(1);
+   		});
+   		
+
+   	}
    function listenForLuxometer(){
    		// Listen for Luxometer 
    		tag.on('luxometerChange', function(lux){
@@ -131,6 +126,9 @@ SensorTag.discover(function(tag) {
 	
    		});
    }
+
+
+
    // When you get an accelermeter change, print it out:
 	function listenForTempReading() {
 		tag.on('irTemperatureChange', function(objectTemp, ambientTemp) {
@@ -213,8 +211,26 @@ SensorTag.discover(function(tag) {
 	// Now that you've defined all the functions, start the process:
 	tag.connectAndSetUp(
 		function(){
+			www.io.on('connection',function(socket){
+			socket.removeAllListeners();
+			socket.on('custom',function(data){
+			// console.log('Connect state : ',data.status);
+				if(Number(data.status)==1)
+				{
+				 	enableIrTempMe();// connected signal
+				 	module.exports.sta= data.status; // connected state
+				}
+				else
+				{
+					module.exports.sta= data.status; // initial state
+				}
+				console.log("Connection status: ",data.status);
+			});
 
-        	console.log("Sensor ID: ",tag.id,"Sensor Type: ",tag.type);
+		});
+        	console.log("Sensor Type: ",tag.type);
+        	console.log("Sensor ID: ",tag.id);
+        	module.exports.type= tag.type;
      		tag.notifySimpleKey(listenForButton); // start the button listener);   	
         });
 	 

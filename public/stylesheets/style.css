@@ -27,7 +27,7 @@ a {
 }
 .circle
 {
-
+	box-shadow: 0px 10px 10px rgba(0,0,1,0.4);
 	width: 300px;
 	height: 300px;
 	min-width: 200px;
@@ -46,6 +46,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2ffb62', end
 }
 .circle2
 {
+	box-shadow: 0px 10px 10px rgba(0,0,1,0.4);
 
 	width: 300px;
 	height: 300px;
@@ -63,7 +64,7 @@ background: -webkit-linear-gradient(-45deg,  rgba(44,252,252,1) 0%,rgba(15,233,2
 background: linear-gradient(135deg,  rgba(44,252,252,1) 0%,rgba(15,233,229,1) 37%,rgba(3,171,171,1) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
 filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2cfcfc', endColorstr='#03abab',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
 }
-#humidity,#temperature,#luxometer
+#humidity,#temperature,#luxometer,#accelerometer
 {
 	min-width: 180px;
 	min-height: 180px;
@@ -92,4 +93,40 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2cfcfc', end
 		position: relative;
 		display: block;
 		font-family: sans-serif;
+}
+.icon
+{
+	margin: 0 auto;
+	width: 100%;
+	
+	position: relative;
+}
+.icon>img
+{
+	display: block;
+	width: 150px;
+	height: 150px;
+	opacity: 0.8;
+	margin: 0 auto;
+padding: 10px;
+}
+.icon>span
+{
+	font-size: 14pt;
+	text-align: center;
+	display: block;
+}
+.icon>div
+{
+	display: none;
+	text-align: center;
+	font-size: 17pt;
+	margin: 0 auto;
+	width: 200px;
+	color: cyan;
+	border: 2px solid cyan;
+	border-radius: 20px;
+	line-height: 30px;
+	cursor: pointer;
+
 }

@@ -9,7 +9,6 @@ var debug = require('debug')('sensorApp:server');
 var http = require('http');
 var sensortag = require('../routes/sensortag');
 
-var test = 12;
 
 /**
  * Get port from environment and store in Express.
@@ -29,14 +28,28 @@ var io = require('socket.io')(server);
 
 
   io.on('connection',function(socket){
-    socket.removeAllListeners();
-  console.log("Sending value from server... "+sensortag.temp);
-  setInterval(function(){
-    socket.emit('tempOut',{temp: sensortag.temp,
-                            humi: sensortag.humi,
-                            lux: sensortag.lux
-                          });
+
+      socket.removeAllListeners();
+      console.log("Sending value from server... "+sensortag.type);
+  setInterval(function(){ 
+socket.emit('signal',{
+  sta: sensortag.sta,
+  type:sensortag.type
+});
   },1000);
+
+      setInterval(function(){  
+      socket.emit('tempOut',{
+                                temp: sensortag.temp,
+                                humi: sensortag.humi,
+                                lux: sensortag.lux,
+                                acc: sensortag.acc
+                                
+                                // sta: sensortag.sta
+                              });
+      },1000);
+
+      
 
   });
 

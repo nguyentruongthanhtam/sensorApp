@@ -1,4 +1,5 @@
-var socket = io.connect('http://192.168.11.8:8080');
+var ip = "192.168.11.3";
+var socket = io.connect('http://'+ip+':8080');
 // var fetchData;
 
 

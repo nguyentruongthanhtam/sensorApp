@@ -9,7 +9,8 @@ var www = require('../bin/www');
 var MongoClient = require('mongodb').MongoClient;
 var assert = require('assert');
 var ObjectId = require('mongodb').ObjectID;
-var url = 'mongodb://192.168.11.8:27017/sensorApp';
+var ip = "192.168.11.3";
+var url = 'mongodb://'+ip+':27017/sensorApp';
 // Jquery Wired up
 var jsdom = require('jsdom').jsdom;
  var document = jsdom('<html></html>', {});

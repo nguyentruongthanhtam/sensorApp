@@ -7,45 +7,40 @@ block ref
 	script(src='/slider/js/bootstrap-slider.js',type="text/javascript")
 block content
 	div.container
+		
+		div.icon
+			//- img#connected(src="connected1small.png")
+			img.disconnected(src="disconnected1small.png")
+			span#type
+			div Connect to device
 		div.row
 			div.col-sm-12.col-md-6.col-lg-6.containerCircle
 				span Humidity
-				.circle
+				.circle2
 				#humidity
 			
 			div.col-sm-12.col-md-6.col-lg-6.containerCircle
 				span Temperature
-				.circle2
+				.circle
 				#temperature
 		div.row
-			div.col-sm-12.col-md-12.col-lg-12.containerCircle
-				span DOOR
+			div.col-sm-12.col-md-6.col-lg-6.containerCircle
+				span Luxometer
 				.circle2
 				#luxometer
-
+			div.col-sm-12.col-md-6.col-lg-6.containerCircle
+				span Accelerometer
+				.circle2
+				#accelerometer
 		div#graph(style="min-width: 310px; height: 400px; margin: 0 auto;backgound-color: blue")
 
-		h1.te
-		
-		
-
-		//- table#tb
-		//- 	each user, i in userlist
-		//- 		tr
-		//- 			td #{user.time}
-		//- 			td #{user.temp}
-		
-		//- table#tb
-		//- 	each item, l in datelist
-		//- 		tr
-		//- 			td #{item.name}
 		div.row
 			div.col-lg-6.col-md-6.col-sm-12 
 				div.panel.panel-default
 					div.panel-heading 
 						h3.panel-title Show Records by Day
 					div.panel-body
-						form(action="http://192.168.11.8:8080/chooseDate",method="post",role='form')
+						form(action="http://192.168.11.3:8080/chooseDate",method="post",role='form')
 							select.form-group.form-control#dateChoice(name="dateForm")
 								each item, l in datelist
 									option(value="#{item.name}") #{item.name}
@@ -57,8 +52,8 @@ block content
 				div.panel.panel-default
 					div.panel-heading 
 						h3.panel-title Show Records by Hour
-					div.panel-body						
-						form(action="http://192.168.11.8:8080/chooseDate",method="post",role='form')
+					div.panel-body
+						form(action="http://192.168.11.3:8080/chooseDate",method="post",role='form')
 							select.form-group.form-control#dateChoice(name="dateForm")
 								each item, l in datelist
 									option(value="#{item.name}") #{item.name}
@@ -67,7 +62,7 @@ block content
 								div.form-group
 									label.control-label.col-md-3.col-lg-3 From
 									div.col-md-9.col-lg-9
-										input.form-control(name="hourFromF",type="number",min="0",max="24")
+										input.form-control(name="hourFromF")
 								div.form-group
 									label.control-label.col-md-3.col-lg-3 To
 									div.col-md-9.col-lg-9
@@ -78,7 +73,7 @@ block content
 										input.span2.slider.slider-horizontal(type="text",data-provide="slider",data-slider-min="1",data-slider-max="24",data-slider-step="1",data-slider-value="[5,14]",name="hourSlider")
 
 							div.form-group
-								button.btn.btn-default(type="submit",name="submitDate",value="Export") Export
+								button.btn.btn-default(type="submit",name="submitHour",value="Export") Export
 		
 						//- ul.nav.nav-tabs(role="tablist")
 							//- 	li.active

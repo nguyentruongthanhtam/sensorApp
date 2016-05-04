@@ -1,25 +1,78 @@
-var socket = io.connect('http://192.168.11.8:8080');
+var ip = "192.168.11.3";
+var socket = io.connect('http://'+ip+':8080');
 
+var connectMenu = $('#type').next();
+ var sensorType;
+ var sensorState ={sta:""};
 
-
-
-socket.on('tempOut',function(data)
-    {
-        console.log(data.lux);
-        $("#humidity").text(data.humi);
-         $("#temperature").text(data.temp);
-         // $("#luxometer").text(data.lux);
-         if(Number(data.lux) > 0)
-         {
-            $("#luxometer").text("OPENED");
-         }
-         else
-         {
-            $("#luxometer").text("CLOSED");
-         }
-    });
 
 $(function () { 
+    socket.on('signal',function(data)
+    {
+        console.log(Number(data.sta));
+        $('#type').text(data.type);
+        if(typeof(data.sta)=="undefined") // not connected
+        {
+            $('.disconnected').on('click',function(){
+                $('#type').next().fadeIn(200);
+                
+                });        
+
+        }
+        else if(Number(data.sta)==1)
+        {
+            $('.disconnected').off('click');
+            $('.disconnected').removeClass('disconnected').addClass('connected');
+            $('.connected').attr('src',"connected1small.png");
+
+            $('#type').css("color","green");
+            socket.on('tempOut',function(data)
+                {
+                    // console.log(data.lux);
+                    $("#humidity").text(data.humi);
+                     $("#temperature").text(data.temp);
+                     $("#accelerometer").text(data.acc);
+                     $("#luxometer").text(data.lux);
+                     sensorType = data.type;
+                     
+                     
+                     // console.log(data.sta);
+                    
+
+                     // if(Number(data.lux) > 0)
+                     // {
+                     //    $("#luxometer").text("ON");
+                     // }
+                     // else
+                     // {
+                     //    $("#luxometer").text("OFF");
+                     // }
+                     // if(typeof(data.lux)!="undefined")
+                     // {
+                     //    $('#type').text("connnected");
+                     // }
+
+                });
+        }
+});
+    // socket.emit('custom',{
+    //         status: "0"
+    //     });
+    // events fired when you click connect to device Button
+    $('#type').next().on('click',function(){
+        socket.emit('custom',{
+            status: "1"
+        });
+        $('.disconnected').off('click');
+        $('.disconnected').removeClass('disconnected').addClass('connected');
+        $('.connected').attr('src',"connected1small.png");
+        $('#type').next().fadeOut(200);
+        $('#type').css("color","green");
+        
+    });
+    // $('#disconnected').on('click',function(){
+    //     $('#type').css("color","green");
+    // });
     $('.slider').slider().on('slideStop',function(ev){
         console.log("min"+$('.slider').slider('getValue'));
     });
@@ -267,7 +320,7 @@ Highcharts.theme = {
                                 var x = (new Date()).getTime(), // current time
                                             y = Number(data.temp);
                                 series.addPoint([x,y],true,true);
-                            console.log(x);
+                            
                         });
                         }
                         
