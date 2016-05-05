@@ -55,27 +55,45 @@ router.get('/userlist', function(req, res) {
 var output;
 router.post('/chooseDate',function(req,res)
 {
-
-	if(typeof(req.body.dateForm)!="undefined")
+	var chosenDate = req.body.dateForm;
+	var chosenHourF = Number(req.body.hourF); 
+	var chosenHourT = Number(req.body.hourT);
+	if(chosenHourF==0 && chosenHourT==0)
+	{
+		chosenHourF=0;
+		chosenHourT=23;
+	} 
+	if(typeof(chosenDate)!="undefined")
 	{	
 		MongoClient.connect(url,function(err,db){
-				res.statusCode=200;
-				
-				var collection=db.collection(req.body.dateForm);
-				collection.find().toArray(function(err,items)
-				{
+				res.statusCode=200;				
+				console.log("from: " + chosenHourF + "to: " + chosenHourT);
+				var collection=db.collection(chosenDate);
+				// collection.find().toArray(function(err,items)
+				// {
+				// 	res.render('date',
+				// 	{
+				// 		"datelist":items,
+				// 		"day":req.body.dateForm
+				// 	});
+				// 	output = items;
+					
+  		// 			//console.log(output);
+				// });	
+
+				// find entry in specific time period 
+				collection.find({hour:{$gte:chosenHourF,$lte:chosenHourT}}).toArray(function(err,items){
 					res.render('date',
 					{
 						"datelist":items,
-						"day":req.body.dateForm
+						"day":chosenDate
 					});
 					output = items;
-					
-  					//console.log(output);
-				});	
+					console.log(output);
+				});
    		 });
 
-		// send data from Database to Date List Page to display in tables
+		// send data from Database to Date List Page to display in graph
 		www.io.on('connection',function(socket)
 		{
 			socket.removeAllListeners();

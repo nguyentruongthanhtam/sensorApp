@@ -32,7 +32,7 @@ var ObjectId = require('mongodb').ObjectID;
 var ip = "192.168.11.3";
 var url = 'mongodb://'+ip+':27017/sensorApp';
 var www = require('../bin/www');
-
+var gDate ={d:"",t:"",full:"",h:0,m:0,s:0};
 console.log(www.io);
 // www.io.on('connection',function(socket){
 // 	socket.removeAllListeners();
@@ -53,9 +53,9 @@ function addZero(i) {
 function getDayTime(gDate)
 {
 	var t = new Date();
-		var h= addZero(t.getHours());
-		var m= addZero(t.getMinutes());
-		var s= addZero(t.getSeconds());
+		var h= t.getHours();
+		var m= t.getMinutes();
+		var s= t.getSeconds();
 		var day = t.getDate();
 		var month = t.getMonth()+1;
 		var year = t.getFullYear();
@@ -63,6 +63,11 @@ function getDayTime(gDate)
 		var fullDate = day + "/" + month + "/" + year ;
 		gDate.t=fullTime;
 		gDate.d=fullDate;
+
+		gDate.h = h;
+		gDate.m = m;
+		gDate.s = s;
+
 		gDate.full = t.getTime();
 		// console.log(fullTime);
 		// console.log(fullDate);
@@ -111,7 +116,7 @@ SensorTag.discover(function(tag) {
    			console.log('x: ',x.toFixed(1));
    			console.log('y: ',y.toFixed(1));
    			console.log('z: ',z.toFixed(1));
-   			module.exports.acc = x.toFixed(1) +" "+ y.toFixed(1)+ " " + z.toFixed(1);
+   			module.exports.acc = x.toFixed(1) +" | "+ y.toFixed(1)+ " | " + z.toFixed(1);
    			// module.exports.acc = (Number(x.toFixed(1))+ Number(y.toFixed(1))+ Number(z.toFixed(1))).toFixed(1);
    		});
    		
@@ -138,18 +143,22 @@ SensorTag.discover(function(tag) {
 
 	   });
 	}
-	var gDate ={d:"",t:"",full:""};
+	
    	getDayTime(gDate);
-   	console.log(gDate.t + "......." + gDate.d);
+   	console.log(gDate.h +" "+gDate.m+" "+gDate.s + "......." + gDate.d);
    	MongoClient.connect(url, function(err, db)
 			 {
 				assert.equal(null, err);
+
+				// Create a collection with the current date as the name
    				db.createCollection(gDate.d,function(err,result)
 					{
 						if(err)
 							console.log("");
 					});
    			});
+
+   	// Get data from Humidity Sensor ( + Temperature )
 	function listenForHumidity() {
 		tag.on('humidityChange', function(temperature, humidity) {
 	     console.log('\tTemperature = %d deg. C', temperature.toFixed(1));
@@ -161,10 +170,13 @@ SensorTag.discover(function(tag) {
 	     getDayTime(gDate);
 	     console.log(gDate.t);
 		// ---------------------------
+		// insert each value with timestamp into database
 		var insertDocumentExplicit = function(db,callback) {	
 		db.collection(gDate.d).insert
 		({
-			  	"time": gDate.t,
+			  	"hour": gDate.h,
+			  	"minute": gDate.m,
+			  	"second": gDate.s,
 		  		"temp": intemp,
 		  		"humi": inhumid
 		}, function(err,result) 

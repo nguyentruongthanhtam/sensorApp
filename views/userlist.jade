@@ -31,24 +31,24 @@ block content
 			div.col-sm-12.col-md-6.col-lg-6.containerCircle
 				span Accelerometer
 				.circle2
-				#accelerometer
+				#accelerometer(style="font-size:15pt")
 		div#graph(style="min-width: 310px; height: 400px; margin: 0 auto;backgound-color: blue")
 
 		div.row
-			div.col-lg-6.col-md-6.col-sm-12 
-				div.panel.panel-default
-					div.panel-heading 
-						h3.panel-title Show Records by Day
-					div.panel-body
-						form(action="http://192.168.11.3:8080/chooseDate",method="post",role='form')
-							select.form-group.form-control#dateChoice(name="dateForm")
-								each item, l in datelist
-									option(value="#{item.name}") #{item.name}
-							div.form-group
-								button.btn.btn-default(type="submit",name="submitDate",value="submit") Export
+			//- div.col-lg-6.col-md-6.col-sm-12 
+			//- 	div.panel.panel-default
+			//- 		div.panel-heading 
+			//- 			h3.panel-title Show Records by Day
+			//- 		div.panel-body
+			//- 			form(action="http://192.168.11.3:8080/chooseDate",method="post",role='form')
+			//- 				select.form-group.form-control#dateChoice(name="dateForm")
+			//- 					each item, l in datelist
+			//- 						option(value="#{item.name}") #{item.name}
+			//- 				div.form-group
+			//- 					button.btn.btn-default(type="submit",name="submitDate",value="submit") Export
 							
 
-			div.col-lg-6.col-md-6.col-sm-12
+			div.col-lg-4.col-lg-offset-4.col-md-4.col-md-offset-4.col-sm-12
 				div.panel.panel-default
 					div.panel-heading 
 						h3.panel-title Show Records by Hour
@@ -62,18 +62,18 @@ block content
 								div.form-group
 									label.control-label.col-md-3.col-lg-3 From
 									div.col-md-9.col-lg-9
-										input.form-control(name="hourFromF")
+										input.form-control(name="hourF")
 								div.form-group
 									label.control-label.col-md-3.col-lg-3 To
 									div.col-md-9.col-lg-9
-										input.form-control(name="hourFromT")
-								div.form-group
-									label.control-label.col-md-3.col-lg-3 Period
-									div.col-md-9.col-lg-9
-										input.span2.slider.slider-horizontal(type="text",data-provide="slider",data-slider-min="1",data-slider-max="24",data-slider-step="1",data-slider-value="[5,14]",name="hourSlider")
+										input.form-control(name="hourT")
+								//- div.form-group
+								//- 	label.control-label.col-md-3.col-lg-3 Period
+								//- 	div.col-md-9.col-lg-9
+								//- 		input.span2.slider.slider-horizontal(type="text",data-provide="slider",data-slider-min="1",data-slider-max="24",data-slider-step="1",data-slider-value="[5,14]",name="hourSlider")
 
 							div.form-group
-								button.btn.btn-default(type="submit",name="submitHour",value="Export") Export
+								button.btn.btn-default(type="submit",name="submitHour",value="submit") Export
 		
 						//- ul.nav.nav-tabs(role="tablist")
 							//- 	li.active
