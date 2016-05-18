@@ -364,7 +364,7 @@ socket.once('date',function(dataFromSocket)
 		                  			y: Number(type)
 		                  		});
     						}
-    		data.sort();
+    		// data.sort();
             return data;
 		};
 
