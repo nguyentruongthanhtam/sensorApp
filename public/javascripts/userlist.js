@@ -1,4 +1,4 @@
-var ip = "192.168.11.3";
+var ip = "192.168.11.7";
 var socket = io.connect('http://'+ip+':8080');
 
 var connectMenu = $('#type').next();
@@ -7,6 +7,7 @@ var connectMenu = $('#type').next();
 
 
 $(function () { 
+    // console.log($('#typeChoice').val());
     socket.on('signal',function(data)
     {
         console.log(Number(data.sta));
@@ -25,7 +26,7 @@ $(function () {
             $('.disconnected').removeClass('disconnected').addClass('connected');
             $('.connected').attr('src',"connected1small.png");
 
-            $('#type').css("color","green");
+            $('#type').css("color","rgba(149, 165, 166,.8)");
             socket.on('tempOut',function(data)
                 {
                     // console.log(data.lux);
@@ -55,9 +56,7 @@ $(function () {
                 });
         }
 });
-    // socket.emit('custom',{
-    //         status: "0"
-    //     });
+
     // events fired when you click connect to device Button
     $('#type').next().on('click',function(){
         socket.emit('custom',{

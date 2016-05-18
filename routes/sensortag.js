@@ -29,11 +29,10 @@ var SensorTag = require('sensortag');// sensortag library
 var MongoClient = require('mongodb').MongoClient;
 var assert = require('assert');
 var ObjectId = require('mongodb').ObjectID;
-var ip = "192.168.11.3";
+var ip = "192.168.11.7";
 var url = 'mongodb://'+ip+':27017/sensorApp';
 var www = require('../bin/www');
 var gDate ={d:"",t:"",full:"",h:0,m:0,s:0};
-console.log(www.io);
 // www.io.on('connection',function(socket){
 // 	socket.removeAllListeners();
 // 	socket.on('connect',function(data){
@@ -43,36 +42,7 @@ console.log(www.io);
 // 	console.log("Device: "+tag.type+" with id of: "+tag.id+" connected !");
 // 	enableIrTempMe();
 // })
-//---------------
-function addZero(i) {
-    if (i < 10) {
-        i = "0" + i;
-    }
-    return i;
-}
-function getDayTime(gDate)
-{
-	var t = new Date();
-		var h= t.getHours();
-		var m= t.getMinutes();
-		var s= t.getSeconds();
-		var day = t.getDate();
-		var month = t.getMonth()+1;
-		var year = t.getFullYear();
-		var fullTime = h + ":" + m + ":" + s ;
-		var fullDate = day + "/" + month + "/" + year ;
-		gDate.t=fullTime;
-		gDate.d=fullDate;
 
-		gDate.h = h;
-		gDate.m = m;
-		gDate.s = s;
-
-		gDate.full = t.getTime();
-		// console.log(fullTime);
-		// console.log(fullDate);
-}
-//---------------
 // listen for tags:
 SensorTag.discover(function(tag) {
 
@@ -93,7 +63,7 @@ SensorTag.discover(function(tag) {
      console.log('enableIRTemperatureSensor');
      // when you enable the IR Temperature sensor, start notifications:
      // tag.enableIrTemperature();
-     tag.enableHumidity(tag.enableLuxometer(tag.enableAccelerometer(notifyMe)));
+     tag.enableHumidity(tag.enableLuxometer(tag.enableIrTemperature(notifyMe)));
      
 
    }
@@ -103,12 +73,16 @@ SensorTag.discover(function(tag) {
 		console.log('Humidity sensor Enabled !...');
 		console.log('Temperature sensor Enabled !...');
 		tag.unnotifySimpleKey();
-		tag.notifyHumidity(listenForHumidity);
-		console.log('Luxometer has started!...');
-		tag.notifyLuxometer(listenForLuxometer);
+		tag.notifyIrTemperature(tag.setIrTemperaturePeriod(1000,listenForTempReading));
+		tag.notifyHumidity(tag.setHumidityPeriod(1000,listenForHumidity));
 
-		console.log('Accelerometer has started!...');
-		tag.notifyAccelerometer(listenForAccelerometer);
+		console.log('Luxometer sensor Enabled!...');
+
+		tag.notifyLuxometer(tag.setLuxometerPeriod(1000,listenForLuxometer));
+
+		// console.log('Accelerometer sensor Enabled!...');
+		// tag.notifyAccelerometer(tag.setAccelerometerPeriod(1000, listenForAccelerometer));
+
    }
    function listenForAccelerometer(){
    		// Listen for Luxometer 
@@ -137,76 +111,37 @@ SensorTag.discover(function(tag) {
    // When you get an accelermeter change, print it out:
 	function listenForTempReading() {
 		tag.on('irTemperatureChange', function(objectTemp, ambientTemp) {
-	     console.log('\tObject Temp = %d deg. C', objectTemp.toFixed(1));
-	     console.log('\tAmbient Temp = %d deg. C', ambientTemp.toFixed(1));
-	     
+	    console.log('\tObject Temp = %d deg. C', objectTemp.toFixed(1));
+	    console.log('\tAmbient Temp = %d deg. C', ambientTemp.toFixed(1));
+	    var intemp = ambientTemp.toFixed(1);
+	    module.exports.temp= ambientTemp.toFixed(1);
+
 
 	   });
 	}
 	
-   	getDayTime(gDate);
-   	console.log(gDate.h +" "+gDate.m+" "+gDate.s + "......." + gDate.d);
-   	MongoClient.connect(url, function(err, db)
-			 {
-				assert.equal(null, err);
-
-				// Create a collection with the current date as the name
-   				db.createCollection(gDate.d,function(err,result)
-					{
-						if(err)
-							console.log("");
-					});
-   			});
-
+   
    	// Get data from Humidity Sensor ( + Temperature )
 	function listenForHumidity() {
 		tag.on('humidityChange', function(temperature, humidity) {
 	     console.log('\tTemperature = %d deg. C', temperature.toFixed(1));
 	     console.log('\tHumidity = %d %H', humidity.toFixed(1));
-	     module.exports.temp= temperature.toFixed(1);
 	     module.exports.humi= humidity.toFixed(1);
 	     var intemp = temperature.toFixed(1);
 	     var inhumid = humidity.toFixed(1);
-	     getDayTime(gDate);
-	     console.log(gDate.t);
-		// ---------------------------
-		// insert each value with timestamp into database
-		var insertDocumentExplicit = function(db,callback) {	
-		db.collection(gDate.d).insert
-		({
-			  	"hour": gDate.h,
-			  	"minute": gDate.m,
-			  	"second": gDate.s,
-		  		"temp": intemp,
-		  		"humi": inhumid
-		}, function(err,result) 
-			{
-				assert.equal(err, null);
-				if(err)
-					console.log("There is an error");
-				callback(result);
-			});
-		};		
-			MongoClient.connect(url, function(err, db)
-			 {
-				assert.equal(null, err);
-				insertDocumentExplicit(db,function(){
-					db.close();
-				});	
-			});
-
+	    
+		
 	   });
 	}
 	// when you get a button change, print it out:
 	function listenForButton() {
 		tag.on('simpleKeyChange', function(left, right) {
-			
+			console.log("Device: "+tag.type);
+			console.log("Device ID: "+tag.id);
 			if (left) {
-				console.log("Device: "+tag.type+" with id of: "+tag.id+"\n");
 				console.log('left button PRESSED!');
 			}
 			if (right) {
-				console.log("Device: "+tag.type+" with id of: "+tag.id+"\n");
 				console.log('right button PRESSED!');
 			}
 			// if both buttons are pressed, disconnect:

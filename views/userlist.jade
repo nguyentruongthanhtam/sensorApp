@@ -10,28 +10,29 @@ block content
 		
 		div.icon
 			//- img#connected(src="connected1small.png")
+			.circle2.blackC
 			img.disconnected(src="disconnected1small.png")
 			span#type
 			div Connect to device
 		div.row
 			div.col-sm-12.col-md-6.col-lg-6.containerCircle
 				span Humidity
-				.circle2
-				#humidity
+				.circle.blueC
+				.circlePanel#humidity
 			
 			div.col-sm-12.col-md-6.col-lg-6.containerCircle
 				span Temperature
-				.circle
-				#temperature
+				.circle.redC
+				.circlePanel#temperature
 		div.row
 			div.col-sm-12.col-md-6.col-lg-6.containerCircle
 				span Luxometer
-				.circle2
-				#luxometer
+				.circle.yellowC
+				.circlePanel#luxometer
 			div.col-sm-12.col-md-6.col-lg-6.containerCircle
 				span Accelerometer
-				.circle2
-				#accelerometer(style="font-size:15pt")
+				.circle.greenC
+				.circlePanel#accelerometer(style="font-size:15pt")
 		div#graph(style="min-width: 310px; height: 400px; margin: 0 auto;backgound-color: blue")
 
 		div.row
@@ -53,11 +54,14 @@ block content
 					div.panel-heading 
 						h3.panel-title Show Records by Hour
 					div.panel-body
-						form(action="http://192.168.11.3:8080/chooseDate",method="post",role='form')
+						form(action="http://192.168.11.7:8080/chooseDate",method="post",role='form')
 							select.form-group.form-control#dateChoice(name="dateForm")
 								each item, l in datelist
 									option(value="#{item.name}") #{item.name}
-
+							select.form-group.form-control#typeChoice(name="typeForm")
+								option(value='temp') Temperature 
+								option(value='humi') Hummidity
+								option(value='lux') Light Level
 							div.form-horizontal
 								div.form-group
 									label.control-label.col-md-3.col-lg-3 From

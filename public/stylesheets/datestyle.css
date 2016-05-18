@@ -1,3 +1,11 @@
+body
+{
+	background: rgb(86,94,114); /* Old browsers */
+background: -moz-radial-gradient(center, ellipse cover, rgba(86,94,114,1) 0%, rgba(58,67,88,1) 100%); /* FF3.6-15 */
+background: -webkit-radial-gradient(center, ellipse cover, rgba(86,94,114,1) 0%,rgba(58,67,88,1) 100%); /* Chrome10-25,Safari5.1-6 */
+background: radial-gradient(ellipse at center, rgba(86,94,114,1) 0%,rgba(58,67,88,1) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#565e72', endColorstr='#3a4358',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
+}
 .name
 {
 	color: red;

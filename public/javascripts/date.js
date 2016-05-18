@@ -1,4 +1,4 @@
-var ip = "192.168.11.3";
+var ip = "192.168.11.7";
 var socket = io.connect('http://'+ip+':8080');
 // var fetchData;
 
@@ -7,6 +7,7 @@ var socket = io.connect('http://'+ip+':8080');
 // {console.log(fetchData);}
 // console.log(fetchData);
 $(function () { 
+
 	function addZero(i) {
     if (i < 10) {
         i = "0" + i;
@@ -328,8 +329,12 @@ var chart = new Highcharts.StockChart({
             }]
         });
 chart.showLoading();
+var type="";
+
 socket.once('date',function(dataFromSocket)
 	{
+		
+		
 		socket.removeAllListeners();
 		// fetchData = (JSON.parse(JSON.stringify(data.entry)));
 		// myFunction(data);
@@ -341,9 +346,22 @@ socket.once('date',function(dataFromSocket)
     						for (var i = 0; i < dataFromSocket.entry.length; i++) {
     				// 			console.log("data received ...." + timestamp(dataFromSocket.entry[i]._id).full);
 								// console.log("data received ...." + dataFromSocket.entry[i]);
+								console.log("data type chosen: "+dataFromSocket.type);
+								switch(dataFromSocket.type)
+							{
+								case "temp":
+									type=dataFromSocket.entry[i].temp;
+									break;
+								case "humi":
+									type=dataFromSocket.entry[i].humi;
+									break;
+								case "lux":
+									type=dataFromSocket.entry[i].lux;
+									break;
+							}
 								data.push({
 		                  			x: timestamp(dataFromSocket.entry[i]._id).full,
-		                  			y: Number(dataFromSocket.entry[i].temp)
+		                  			y: Number(type)
 		                  		});
     						}
     		data.sort();

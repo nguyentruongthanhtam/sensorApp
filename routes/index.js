@@ -9,7 +9,7 @@ var www = require('../bin/www');
 var MongoClient = require('mongodb').MongoClient;
 var assert = require('assert');
 var ObjectId = require('mongodb').ObjectID;
-var ip = "192.168.11.3";
+var ip = "192.168.11.7";
 var url = 'mongodb://'+ip+':27017/sensorApp';
 // Jquery Wired up
 var jsdom = require('jsdom').jsdom;
@@ -29,7 +29,7 @@ router.get('/userlist', function(req, res) {
 	res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     MongoClient.connect(url,function(err,db){
 		db.collectionNames(function(err, items) {
-	  		console.log(items);
+	  		// console.log(items);
 	        res.render('userlist', {
 	        	"datelist" : items
 	        	});
@@ -52,58 +52,53 @@ router.get('/userlist', function(req, res) {
     
 });
 
-var output;
+var output,chosenType,chooseDate,chosenHourF,chosenHourT;
 router.post('/chooseDate',function(req,res)
 {
-	var chosenDate = req.body.dateForm;
-	var chosenHourF = Number(req.body.hourF); 
-	var chosenHourT = Number(req.body.hourT);
+	chosenDate = req.body.dateForm;
+	chosenType = req.body.typeForm;
+	chosenHourF = Number(req.body.hourF); 
+	chosenHourT = Number(req.body.hourT);
+	
 	if(chosenHourF==0 && chosenHourT==0)
 	{
 		chosenHourF=0;
 		chosenHourT=23;
 	} 
-	if(typeof(chosenDate)!="undefined")
-	{	
-		MongoClient.connect(url,function(err,db){
+
+		MongoClient.connect(url,function(err,db)
+		{
 				res.statusCode=200;				
 				console.log("from: " + chosenHourF + "to: " + chosenHourT);
 				var collection=db.collection(chosenDate);
-				// collection.find().toArray(function(err,items)
-				// {
-				// 	res.render('date',
-				// 	{
-				// 		"datelist":items,
-				// 		"day":req.body.dateForm
-				// 	});
-				// 	output = items;
-					
-  		// 			//console.log(output);
-				// });	
 
 				// find entry in specific time period 
 				collection.find({hour:{$gte:chosenHourF,$lte:chosenHourT}}).toArray(function(err,items){
 					res.render('date',
 					{
-						"datelist":items,
 						"day":chosenDate
 					});
 					output = items;
-					console.log(output);
 				});
+
    		 });
 
 		// send data from Database to Date List Page to display in graph
+
+
+		// Fired multiple times !!!!
 		www.io.on('connection',function(socket)
 		{
 			socket.removeAllListeners();
-    		socket.emit('date',{entry:output});
+    		socket.emit('date',{
+    			entry:output,
+    			type:chosenType
+    		});
+    		console.log("chosen type: "+chosenDate);
   		});
-	}
-	else
-	{
-		res.statusCode = 400;
-	}
+  		
+	
+	
 });
 
 router.get('/newuser', function(req, res){
