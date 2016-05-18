@@ -330,12 +330,10 @@ var chart = new Highcharts.StockChart({
         });
 chart.showLoading();
 var type="";
-
+socket.removeAllListeners();
 socket.once('date',function(dataFromSocket)
 	{
 		
-		
-		socket.removeAllListeners();
 		// fetchData = (JSON.parse(JSON.stringify(data.entry)));
 		// myFunction(data);
 		console.log("data length...." + dataFromSocket.entry.length);

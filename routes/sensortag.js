@@ -101,8 +101,6 @@ SensorTag.discover(function(tag) {
    		tag.on('luxometerChange', function(lux){
    			console.log('lux value = ',lux);
    			module.exports.lux = lux.toFixed(1);
-   			
-	
    		});
    }
 
@@ -155,6 +153,33 @@ SensorTag.discover(function(tag) {
 	}
 
 
+	// www.io.on('connection',function(socket){
+
+ //      socket.removeAllListeners();
+ //      console.log("Sending value from server... "+sensortag.type);
+ //      setInterval(function(){ 
+ //      socket.emit('signal',{
+ //                                sta: sensortag.sta,
+ //                                type:sensortag.type
+ //                            });
+ //      if(typeof(sensortag.temp)!='undefined')
+ //      {
+ //          socket.emit('tempOut',{
+ //                                    temp: sensortag.temp,
+ //                                    humi: sensortag.humi,
+ //                                    lux: sensortag.lux
+ //                                  });
+ //          MongoClient.connect(url, function(err, db)
+ //          {
+ //            assert.equal(null, err);
+ //            insertDocumentExplicit(db,function(){
+ //              db.close();
+ //            }); 
+ //          });
+ //      }
+ //      },1000);
+
+ //  });
 	// Now that you've defined all the functions, start the process:
 	tag.connectAndSetUp(
 		function(){

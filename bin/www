@@ -7,6 +7,7 @@
 var app = require('../app');
 var debug = require('debug')('sensorApp:server');
 var http = require('http');
+
 var sensortag = require('../routes/sensortag');
 var MongoClient = require('mongodb').MongoClient;
 var ip = "192.168.11.7";
@@ -14,21 +15,25 @@ var url = 'mongodb://'+ip+':27017/sensorApp';
 var gDate ={d:"",t:"",full:"",h:0,m:0,s:0};
 var assert = require('assert');
 var ObjectId = require('mongodb').ObjectID;
+
 // console.log(gDate.h +" "+gDate.m+" "+gDate.s + "......." + gDate.d);
 
-MongoClient.connect(url, function(err, db)
-   {
-    assert.equal(null, err);
 
-    // Create a collection with the current date as the name
-      db.createCollection(gDate.d,function(err,result)
-      {
-        if(err)
-          console.log("");
-        
-      });
-    });
+/**
+ * Get port from environment and store in Express.
+ */
 
+var port = normalizePort(process.env.PORT || '8080');
+app.set('port', port);
+
+/**
+ * Create HTTP server.
+ */
+
+var server = http.createServer(app);
+
+// socket.io config
+var io = require('socket.io')(server);
 // ---------------------------
     // insert each value with timestamp into database
     var insertDocumentExplicit = function(db,callback) {  
@@ -55,26 +60,52 @@ MongoClient.connect(url, function(err, db)
         }
     };    
       
-    
+    //---------------
+function addZero(i) {
+    if (i < 10) {
+        i = "0" + i;
+    }
+    return i;
+}
+function getDayTime(gDate)
+{
+    var t = new Date();
+    var h= t.getHours();
+    var m= t.getMinutes();
+    var s= t.getSeconds();
+    var day = t.getDate();
+    var month = t.getMonth()+1;
+    var year = t.getFullYear();
+    var fullTime = h + ":" + m + ":" + s ;
+    var fullDate = day + "/" + month + "/" + year ;
+    gDate.t=fullTime;
+    gDate.d=fullDate;
 
-/**
- * Get port from environment and store in Express.
- */
+    gDate.h = h;
+    gDate.m = m;
+    gDate.s = s;
 
-var port = normalizePort(process.env.PORT || '8080');
-app.set('port', port);
+    gDate.full = t.getTime();
+    // console.log(fullTime);
+    // console.log(fullDate);
+}
+//---------------
 
-/**
- * Create HTTP server.
- */
+MongoClient.connect(url, function(err, db)
+   {
+    assert.equal(null, err);
 
-var server = http.createServer(app);
+    // Create a collection with the current date as the name
+      db.createCollection(gDate.d,function(err,result)
+      {
+        if(err)
+          console.log("");
+      });
 
-// socket.io config
-var io = require('socket.io')(server);
+    });
 
 
-  io.on('connection',function(socket){
+io.on('connection',function(socket){
 
       socket.removeAllListeners();
       console.log("Sending value from server... "+sensortag.type);
@@ -103,7 +134,6 @@ var io = require('socket.io')(server);
       },1000);
 
   });
-
  exports.io = io;
 
 /**
@@ -174,33 +204,3 @@ function onListening() {
   debug('Listening on ' + bind);
 }
 
-//---------------
-function addZero(i) {
-    if (i < 10) {
-        i = "0" + i;
-    }
-    return i;
-}
-function getDayTime(gDate)
-{
-    var t = new Date();
-    var h= t.getHours();
-    var m= t.getMinutes();
-    var s= t.getSeconds();
-    var day = t.getDate();
-    var month = t.getMonth()+1;
-    var year = t.getFullYear();
-    var fullTime = h + ":" + m + ":" + s ;
-    var fullDate = day + "/" + month + "/" + year ;
-    gDate.t=fullTime;
-    gDate.d=fullDate;
-
-    gDate.h = h;
-    gDate.m = m;
-    gDate.s = s;
-
-    gDate.full = t.getTime();
-    // console.log(fullTime);
-    // console.log(fullDate);
-}
-//---------------

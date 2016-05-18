@@ -19,6 +19,13 @@ var jsdom = require('jsdom').jsdom;
 
 var router = express.Router();
 var intemp="TEMP OUTPUT";
+var db;
+var collection;
+MongoClient.connect(url,function(err,database)
+		{
+			if(err) throw err;
+			db = database;
+		});
 /* GET home page. */
 router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express',temp : intemp});
@@ -27,15 +34,12 @@ router.get('/userlist', function(req, res) {
 	res.statusCode = 200;
 	res.setHeader("Access-Control-Allow-Origin", "*");
 	res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    MongoClient.connect(url,function(err,db){
-		db.collectionNames(function(err, items) {
+	db.collectionNames(function(err, items) {
 	  		// console.log(items);
 	        res.render('userlist', {
 	        	"datelist" : items
 	        	});
 	   		});
-    	
-    });
     // var db = req.db;
     // db.collectionNames(function(err, items) {
 	  	// 			console.log(items);
@@ -55,6 +59,8 @@ router.get('/userlist', function(req, res) {
 var output,chosenType,chooseDate,chosenHourF,chosenHourT;
 router.post('/chooseDate',function(req,res)
 {
+	console.log("choosen date called");
+	res.statusCode=200;		
 	chosenDate = req.body.dateForm;
 	chosenType = req.body.typeForm;
 	chosenHourF = Number(req.body.hourF); 
@@ -65,40 +71,35 @@ router.post('/chooseDate',function(req,res)
 		chosenHourF=0;
 		chosenHourT=23;
 	} 
-
-		MongoClient.connect(url,function(err,db)
-		{
-				res.statusCode=200;				
-				console.log("from: " + chosenHourF + "to: " + chosenHourT);
-				var collection=db.collection(chosenDate);
-
-				// find entry in specific time period 
-				collection.find({hour:{$gte:chosenHourF,$lte:chosenHourT}}).toArray(function(err,items){
-					res.render('date',
-					{
-						"day":chosenDate
-					});
-					output = items;
-				});
-
-   		 });
-
-		// send data from Database to Date List Page to display in graph
-
-
-		// Fired multiple times !!!!
-		www.io.on('connection',function(socket)
-		{
-			socket.removeAllListeners();
-    		socket.emit('date',{
-    			entry:output,
-    			type:chosenType
-    		});
-    		console.log("chosen type: "+chosenDate);
-  		});
-  		
+			
+	console.log("from: " + chosenHourF + "to: " + chosenHourT);
 	
-	
+	collection =db.collection(chosenDate);
+	// find entry in specific time period 
+	collection.find({hour:{$gte:chosenHourF,$lte:chosenHourT}}).toArray(function(err,items){
+		res.render('date',
+		{
+			"day":chosenDate
+		});
+		output = items;
+		
+	});
+
+	// send data from Database to Date List Page to display in graph
+
+
+	// Fired multiple times !!!!
+	www.io.on('connection',function(socket)
+	{
+		socket.removeAllListeners();
+		socket.emit('date',{
+			entry:output,
+			type:chosenType
+		});
+		console.log("chosen type: "+ chosenType);
+		});
+		
+
 });
 
 router.get('/newuser', function(req, res){
