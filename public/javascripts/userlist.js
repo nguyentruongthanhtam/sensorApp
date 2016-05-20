@@ -12,7 +12,7 @@ $(function () {
     {
         console.log(Number(data.sta));
         $('#type').text(data.type);
-        if(typeof(data.sta)=="undefined") // not connected
+        if(Number(data.sta)!=1) // not connected
         {
             $('.disconnected').on('click',function(){
                 $('#type').next().fadeIn(200);

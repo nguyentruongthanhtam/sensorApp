@@ -26,13 +26,12 @@
 
 var async = require('async');
 var SensorTag = require('sensortag');// sensortag library
-var MongoClient = require('mongodb').MongoClient;
-var assert = require('assert');
-var ObjectId = require('mongodb').ObjectID;
-var ip = "192.168.11.7";
-var url = 'mongodb://'+ip+':27017/sensorApp';
-var www = require('../bin/www');
-var gDate ={d:"",t:"",full:"",h:0,m:0,s:0};
+// var MongoClient = require('mongodb').MongoClient;
+// var assert = require('assert');
+// var ObjectId = require('mongodb').ObjectID;
+// var ip = "193.166.93.42";
+// var url = 'mongodb://'+ip+':27017/sensorApp';
+// var www = require('../bin/www');
 // www.io.on('connection',function(socket){
 // 	socket.removeAllListeners();
 // 	socket.on('connect',function(data){
@@ -44,6 +43,8 @@ var gDate ={d:"",t:"",full:"",h:0,m:0,s:0};
 // })
 
 // listen for tags:
+var status=0;
+
 SensorTag.discover(function(tag) {
 
 
@@ -72,12 +73,10 @@ SensorTag.discover(function(tag) {
 		console.log('Services have started !...');
 		console.log('Humidity sensor Enabled !...');
 		console.log('Temperature sensor Enabled !...');
+		console.log('Luxometer sensor Enabled!...');
 		tag.unnotifySimpleKey();
 		tag.notifyIrTemperature(tag.setIrTemperaturePeriod(1000,listenForTempReading));
 		tag.notifyHumidity(tag.setHumidityPeriod(1000,listenForHumidity));
-
-		console.log('Luxometer sensor Enabled!...');
-
 		tag.notifyLuxometer(tag.setLuxometerPeriod(1000,listenForLuxometer));
 
 		// console.log('Accelerometer sensor Enabled!...');
@@ -153,58 +152,47 @@ SensorTag.discover(function(tag) {
 	}
 
 
-	// www.io.on('connection',function(socket){
-
- //      socket.removeAllListeners();
- //      console.log("Sending value from server... "+sensortag.type);
- //      setInterval(function(){ 
- //      socket.emit('signal',{
- //                                sta: sensortag.sta,
- //                                type:sensortag.type
- //                            });
- //      if(typeof(sensortag.temp)!='undefined')
- //      {
- //          socket.emit('tempOut',{
- //                                    temp: sensortag.temp,
- //                                    humi: sensortag.humi,
- //                                    lux: sensortag.lux
- //                                  });
- //          MongoClient.connect(url, function(err, db)
- //          {
- //            assert.equal(null, err);
- //            insertDocumentExplicit(db,function(){
- //              db.close();
- //            }); 
- //          });
- //      }
- //      },1000);
-
  //  });
 	// Now that you've defined all the functions, start the process:
 	tag.connectAndSetUp(
 		function(){
-			www.io.on('connection',function(socket){
-			socket.removeAllListeners();
-			socket.on('custom',function(data){
-			// console.log('Connect state : ',data.status);
-				if(Number(data.status)==1)
-				{
-				 	enableIrTempMe();// connected signal
-				 	module.exports.sta= data.status; // connected state
-				}
-				else
-				{
-					module.exports.sta= data.status; // initial state
-				}
-				console.log("Connection status: ",data.status);
-			});
+			// module.exports.status = status;
+			// io.on('connection',function(socket){
+			// socket.removeAllListeners();
+			// socket.on('custom',function(data){
+			// // console.log('Connect state : ',data.status);
+			// if(status==0)
+			// {
+			var intervalID=setInterval(function(){
+					console.log("Check status: ",status);
+							if(status==1)
+							{
+							 	enableIrTempMe();// connected signal
+								clearInterval(intervalID);
+							 	
+							}
+							
+						},1000);
 
-		});
+			module.exports.sta = status;
+
+			// }
+			// 	console.log("Connection status: ",data.status);
+			// });
+
+			// });
         	console.log("Sensor Type: ",tag.type);
         	console.log("Sensor ID: ",tag.id);
+        	
         	module.exports.type= tag.type;
      		tag.notifySimpleKey(listenForButton); // start the button listener);   	
         });
 	 
-	
 });
+	module.exports= function(s)
+{
+	status=s;
+	console.log("Check status: ",status);
+	// if(s == 1)
+	// 	enableIrTempMe();// connected signal
+}
