@@ -1,34 +1,75 @@
-var ip = "192.168.11.7";
+var ip = "192.168.11.5";
 var socket = io.connect('http://'+ip+':8080');
 // var fetchData;
 
-
+var type,typeValue;
 // if(typeof(fetchData)!="undefined")
 // {console.log(fetchData);}
 // console.log(fetchData);
 $(function () { 
+	// convert Object ID to timestamp
 
-	function addZero(i) {
-    if (i < 10) {
-        i = "0" + i;
-    }
-    return i;
-}
-// convert Object ID to timestamp
-var timestamp = function(objId)
-{
-	var t = objId.toString().substring(0,8);
-	var d = new Date(parseInt (t,16) * 1000);
-	var h = addZero(d.getHours());
-	var m = addZero(d.getMinutes());
-	var s = addZero(d.getSeconds()); 
-	var output = {full:"" , timeOnly:""};
-	output.timeOnly= h+':'+m+':'+s;
-	output.full = d.getTime();
+socket.once('date',function(dataFromSocket)
+	{
+  		chart.showLoading();
+		type = dataFromSocket.type;
 	
-	return output;
-	// return d;
-}
+// var jqxhr = $.getJSON( "http://192.168.11.5:8080/test.json", function(dataJSON) {
+//   console.log( "success" );
+//  	function addData() {
+// 			var data = [];
+    					
+//     						// console.log("data received ...." + dataJSON);
+//     						for (var i = 0; i < dataJSON.length; i++) {
+//     				// 			console.log("data received ...." + timestamp(dataFromSocket.entry[i]._id).full);
+// 								// console.log("data received ...." + dataFromSocket.entry[i]);
+// 								// console.log("data type chosen: "+type);
+// 								switch(type)
+// 							{
+// 								case "temp":
+// 									typeValue=dataJSON[i].temp;
+// 									// console.log("data received ...." + typeValue);
+// 									break;
+// 								case "humi":
+// 									typeValue=dataJSON[i].humi;
+// 									break;
+// 								case "lux":
+// 									typeValue=dataJSON[i].lux;
+// 									break;
+// 							}
+// 								data.push({
+// 		                  			x: timestamp(dataJSON[i]._id).full,
+// 		                  			y: Number(typeValue)
+// 		                  		});
+//     						}
+//     		// data.sort();
+//             return data;
+// 		};
+	chart.series[0].setData(dataFromSocket.points);
+	chart.hideLoading();
+// })
+//   .done(function() {
+//     console.log( "second success" );
+//   })
+//   .fail(function() {
+//     console.log( arguments );
+//   })
+//   .always(function() {
+//     console.log( "complete" );
+//   });
+// Perform other work here ...
+ });
+// Set another completion function for the request above
+// jqxhr.complete(function() {
+//   console.log( "second complete" );
+// });
+
+// $.getJSON('http://192.168.11.5:8080/22052016.json',function(dt){
+// 	var items=[];
+// 	$.each(dt,function(key,val){
+// 		items.push(key,val);
+// 	});
+// 	alert("loaded");
 Highcharts.setOptions({
     	global: {
         	useUTC: false
@@ -239,9 +280,8 @@ Highcharts.theme = {
    maskColor: 'rgba(255,255,255,0.3)'
 };
 
-// Apply the theme
-Highcharts.setOptions(Highcharts.theme);
-var chart = new Highcharts.StockChart({
+	Highcharts.setOptions(Highcharts.theme);
+	var chart = new Highcharts.StockChart({
         chart: {
                 zoomType: 'x',
                 renderTo : 'container',
@@ -276,6 +316,16 @@ var chart = new Highcharts.StockChart({
 				}
 
             },
+            exporting:{
+            	allowHTML: true,
+            	buttons: {
+            		contextButton: {
+            			enabled: true,
+            			align: "right",
+
+            		}
+            	}
+            },
             plotOptions: {
                 area: {
                     fillColor: {
@@ -307,66 +357,63 @@ var chart = new Highcharts.StockChart({
             series: [{
     			turboThreshold:0,
                 data: [], 
-                // (function () {
-        //             var data = [];
-    					
-    				// 		console.log("data received ...." + dataFromSocket);
-    				// 		for (var i = 0; i < dataFromSocket.entry.length; i++) {
-    				// // 			console.log("data received ...." + timestamp(dataFromSocket.entry[i]._id).full);
-								// // console.log("data received ...." + dataFromSocket.entry[i]);
-								// data.push({
-		      //             			x: timestamp(dataFromSocket.entry[i]._id).full,
-		      //             			y: Number(dataFromSocket.entry[i].temp)
-		      //             		});
-    				// 		}
-    					
-        //             return data;
-                // }()),
-
-                 dataGrouping: {
-                    enabled: false
+                dataGrouping: {
+                    enabled: true
                 }
             }]
         });
-chart.showLoading();
-var type="";
-socket.removeAllListeners();
-socket.once('date',function(dataFromSocket)
-	{
-		
-		// fetchData = (JSON.parse(JSON.stringify(data.entry)));
-		// myFunction(data);
-		console.log("data length...." + dataFromSocket.entry.length);
-		function addData() {
-			var data = [];
-    					
-    						console.log("data received ...." + dataFromSocket);
-    						for (var i = 0; i < dataFromSocket.entry.length; i++) {
-    				// 			console.log("data received ...." + timestamp(dataFromSocket.entry[i]._id).full);
-								// console.log("data received ...." + dataFromSocket.entry[i]);
-								console.log("data type chosen: "+dataFromSocket.type);
-								switch(dataFromSocket.type)
-							{
-								case "temp":
-									type=dataFromSocket.entry[i].temp;
-									break;
-								case "humi":
-									type=dataFromSocket.entry[i].humi;
-									break;
-								case "lux":
-									type=dataFromSocket.entry[i].lux;
-									break;
-							}
-								data.push({
-		                  			x: timestamp(dataFromSocket.entry[i]._id).full,
-		                  			y: Number(type)
-		                  		});
-    						}
-    		// data.sort();
-            return data;
-		};
+// });
 
-	chart.series[0].setData(addData());
-	chart.hideLoading();
-	});
+function addZero(i) {
+    if (i < 10) {
+        i = "0" + i;
+    }
+    return i;
+}
+
+
+// Apply the theme
+
+
+// chart.showLoading();
+// var type="";
+// socket.removeAllListeners();
+// socket.once('date',function(dataFromSocket)
+// 	{
+		
+// 		// fetchData = (JSON.parse(JSON.stringify(data.entry)));
+// 		// myFunction(data);
+// 		console.log("data length...." + dataFromSocket.entry.length);
+// 		function addData() {
+// 			var data = [];
+    					
+//     						console.log("data received ...." + dataFromSocket);
+//     						for (var i = 0; i < dataFromSocket.entry.length; i++) {
+//     				// 			console.log("data received ...." + timestamp(dataFromSocket.entry[i]._id).full);
+// 								// console.log("data received ...." + dataFromSocket.entry[i]);
+// 								console.log("data type chosen: "+dataFromSocket.type);
+// 								switch(dataFromSocket.type)
+// 							{
+// 								case "temp":
+// 									type=dataFromSocket.entry[i].temp;
+// 									break;
+// 								case "humi":
+// 									type=dataFromSocket.entry[i].humi;
+// 									break;
+// 								case "lux":
+// 									type=dataFromSocket.entry[i].lux;
+// 									break;
+// 							}
+// 								data.push({
+// 		                  			x: timestamp(dataFromSocket.entry[i]._id).full,
+// 		                  			y: Number(type)
+// 		                  		});
+//     						}
+//     		// data.sort();
+//             return data;
+// 		};
+
+// 	chart.series[0].setData(addData());
+// 	chart.hideLoading();
+// 	});
 });

@@ -11,12 +11,13 @@ var MongoClient = require('mongodb').MongoClient;
 // var db = monk('192.168.11.7:27017/sensorApp');
 var assert = require('assert');
 var ObjectId = require('mongodb').ObjectID;
-var ip = "192.168.11.7";
+var ip = "192.168.11.5";
 var url = 'mongodb://'+ip+':27017/sensorApp';
-var jsdom = require('jsdom').jsdom;
- var document = jsdom('<html></html>', {});
- var window = document.defaultView;
- var $ = require('jquery')(window);
+// var jsdom = require('jsdom').jsdom;
+//  var document = jsdom('<html></html>', {});
+//  var window = document.defaultView;
+//  var $ = require('jquery')(window);
+
 var db;
 var collection;
 
@@ -25,7 +26,7 @@ var collection;
 var sensortag = require('./routes/sensortag');
 var routes = require('./routes/index');
 var users = require('./routes/users');
-
+// var mongoexport = require('./public/javascripts/outout');
 
 var j= require('./routes/jq');
 var app = express();
@@ -33,8 +34,8 @@ var server = require('http').Server(app);
 var debug = require('debug')('sensorApp:server');
 var http = require('http');
 var port = normalizePort(process.env.PORT || '8080');
-
-
+var sensorType,sStatus;
+var output,chosenType,chooseDate,chosenHourF,chosenHourT;
 var io = require('socket.io')(server);
 var gDate ={d:"",t:"",full:"",h:0,m:0,s:0};
 getDayTime(gDate);
@@ -59,12 +60,7 @@ MongoClient.connect(url,function(err,database)
         }
       });
       if(err) console.log(err);
-
-      
     });
-
-var sensorType,sStatus;
-
               setInterval(function(){ 
             if(typeof(sensortag.temp)!="undefined")
             {
@@ -83,7 +79,7 @@ io.on('connection',function(socket)
                console.log("Sensor status: "+ data.status);
           })
           socket.emit('date',{
-            entry:output,
+            points:output,
             type:chosenType
           });
           console.log("chosen type: "+ chosenType);
@@ -132,46 +128,107 @@ app.get('/userlist', function(req, res) {
             "datelist" : items
             });
         });
-    
 });
 
 
-var output,chosenType,chooseDate,chosenHourF,chosenHourT;
+
 app.post('/chooseDate',function(req,res)
 {
+  var timestamp = function(objId)
+{
+  var t = objId.toString().substring(0,8);
+  var d = new Date(parseInt (t,16) * 1000);
+  var h = addZero(d.getHours());
+  var m = addZero(d.getMinutes());
+  var s = addZero(d.getSeconds()); 
+  var output = {full:"" , timeOnly:""};
+  output.timeOnly= h+':'+m+':'+s;
+  output.full = d.getTime();
+  
+  return output;
+  // return d;
+}
   console.log("choosen date called");
+  function createJSON(array)
+    {
+
+          for(var i=0;i<array.length;i++)
+        {
+            // we using synchronous version of appendFile because the required consistency in 
+            // JSON format
+            console.log(array[i].temp);
+             // fs.appendFileSync('./public/test.json',JSON.stringify(array[i]));
+             if(i != array.length-1)
+             {
+              fs.appendFileSync('./public/test.json',","); 
+             }
+        }
+       
+        fs.appendFileSync('./public/test.json',"]");
+    }
+  function exportData(array)
+    {
+        var data = [];
+          for(var i=0;i<array.length;i++)
+        {
+            // we using synchronous version of appendFile because the required consistency in 
+            // JSON format
+            data.push({
+                            x: timestamp(array[i]._id).full,
+                            y: Number(array[i].temp)
+                          });
+            // console.log(data[0]);
+        }
+       return data;
+        
+    }
   res.statusCode=200;   
   chosenDate = req.body.dateForm;
   chosenType = req.body.typeForm;
   chosenHourF = Number(req.body.hourF); 
   chosenHourT = Number(req.body.hourT);
-  
+  // export collection to JSON file ready to pass to HighCharts to display
+  // var mongoexport=require('./public/javascripts/outout')(chosenDate);
+  var fs = require('fs');
   if(chosenHourF==0 && chosenHourT==0)
   {
     chosenHourF=0;
     chosenHourT=23;
   } 
       
-  console.log("from: " + chosenHourF + "to: " + chosenHourT);
+  console.log("from: " + chosenHourF + "to: " +  ' on:' + chosenDate);
   
   collection =db.collection(chosenDate);
   // find entry in specific time period 
-  collection.find({hour:{$gte:chosenHourF,$lte:chosenHourT}}).toArray(function(err,items){
+   fs.appendFileSync('./public/test.json',"[");
+   switch(chosenType)
+   {
+    case "temp":
+        collection.find({hour:{$gte:chosenHourF,$lte:chosenHourT}} , {temp:1}).toArray(function(err,items){
+         // output = items;
+         output=exportData(items);
+        });
+        break;
+
+    case "humi":
+        collection.find({hour:{$gte:chosenHourF,$lte:chosenHourT}} , {humi:1}).toArray(function(err,items){
+        createJSON(items);
+        });
+        break;
+
+    case "lux":
+        collection.find({hour:{$gte:chosenHourF,$lte:chosenHourT}} , {lux:1}).toArray(function(err,items){
+         createJSON(items); 
+        });
+        break;
+   }
+    
     res.render('date',
     {
       "day":chosenDate
     });
-    output = items;
-    
-  });
-
+  
   // send data from Database to Date List Page to display in graph
-
-
-  // Fired multiple times !!!!
-
-    
-
 });
 
 // view engine setup
@@ -337,145 +394,6 @@ function onListening() {
     : 'port ' + addr.port;
   debug('Listening on ' + bind);
 }
-// SensorTag.discover(function(tag) {
-
-
-//   // when you disconnect from a tag, exit the program:
-//   tag.on('disconnect', function() {
-//     console.log('disconnected!');
-//     process.exit(0);
-//   });
-
-//   function connectAndSetUpMe() {      // attempt to connect to the tag
-//      console.log('connectAndSetUp');
-//      tag.connectAndSetUp(enableIrTempMe);   // when you connect, call enableIrTempMe
-   
-//    }
-
-//    function enableIrTempMe() {    // attempt to enable the IR Temperature sensor
-//      console.log('enableIRTemperatureSensor');
-//      // when you enable the IR Temperature sensor, start notifications:
-//      // tag.enableIrTemperature();
-//      tag.enableHumidity(tag.enableLuxometer(tag.enableIrTemperature(notifyMe)));
-     
-
-//    }
-
-//   function notifyMe() {
-//     console.log('Services have started !...');
-//     console.log('Humidity sensor Enabled !...');
-//     console.log('Temperature sensor Enabled !...');
-//     console.log('Luxometer sensor Enabled!...');
-//     tag.unnotifySimpleKey();
-//     tag.notifyIrTemperature(tag.setIrTemperaturePeriod(1000,listenForTempReading));
-//     tag.notifyHumidity(tag.setHumidityPeriod(1000,listenForHumidity));
-//     tag.notifyLuxometer(tag.setLuxometerPeriod(1000,listenForLuxometer));
-
-//     // console.log('Accelerometer sensor Enabled!...');
-//     // tag.notifyAccelerometer(tag.setAccelerometerPeriod(1000, listenForAccelerometer));
-
-//    }
-//    function listenForAccelerometer(){
-//       // Listen for Luxometer 
-//       tag.on('accelerometerChange', function(x, y, z){
-//         console.log('x: ',x.toFixed(1));
-//         console.log('y: ',y.toFixed(1));
-//         console.log('z: ',z.toFixed(1));
-//         module.exports.acc = x.toFixed(1) +" | "+ y.toFixed(1)+ " | " + z.toFixed(1);
-//         // module.exports.acc = (Number(x.toFixed(1))+ Number(y.toFixed(1))+ Number(z.toFixed(1))).toFixed(1);
-//       });
-      
-
-//     }
-//    function listenForLuxometer(){
-//       // Listen for Luxometer 
-//       tag.on('luxometerChange', function(lux){
-//         console.log('lux value = ',lux);
-//         module.exports.lux = lux.toFixed(1);
-//       });
-//    }
-
-
-
-//    // When you get an accelermeter change, print it out:
-//   function listenForTempReading() {
-//     tag.on('irTemperatureChange', function(objectTemp, ambientTemp) {
-//       console.log('\tObject Temp = %d deg. C', objectTemp.toFixed(1));
-//       console.log('\tAmbient Temp = %d deg. C', ambientTemp.toFixed(1));
-//       var intemp = ambientTemp.toFixed(1);
-//       module.exports.temp= ambientTemp.toFixed(1);
-
-
-//      });
-//   }
-  
-   
-//     // Get data from Humidity Sensor ( + Temperature )
-//   function listenForHumidity() {
-//     tag.on('humidityChange', function(temperature, humidity) {
-//        console.log('\tTemperature = %d deg. C', temperature.toFixed(1));
-//        console.log('\tHumidity = %d %H', humidity.toFixed(1));
-//        module.exports.humi= humidity.toFixed(1);
-//        var intemp = temperature.toFixed(1);
-//        var inhumid = humidity.toFixed(1);
-      
-    
-//      });
-//   }
-//   // when you get a button change, print it out:
-//   function listenForButton() {
-//     tag.on('simpleKeyChange', function(left, right) {
-//       console.log("Device: "+tag.type);
-//       console.log("Device ID: "+tag.id);
-//       if (left) {
-//         console.log('left button PRESSED!');
-//       }
-//       if (right) {
-//         console.log('right button PRESSED!');
-//       }
-//       // if both buttons are pressed, disconnect:
-//       if (left && right) {
-//         console.log("Device: "+tag.type+" with id of: "+tag.id+" connected !");
-//         enableIrTempMe();
-//         // tag.disconnect();
-
-//       }
-//      });
-//   }
-
-
-//  //  });
-//   // Now that you've defined all the functions, start the process:
-//   tag.connectAndSetUp(
-//     function(){
-//     console.log("Sensor Type: ",tag.type);
-//           console.log("Sensor ID: ",tag.id);
-//       www.io.on('connection',function(socket){
-//       socket.removeAllListeners();
-//       socket.on('custom',function(data){
-//       // console.log('Connect state : ',data.status);
-//         if(Number(data.status)==1)
-//         {
-//           enableIrTempMe();// connected signal
-//           module.exports.sta= data.status; // connected state
-//         }
-//         else
-//         {
-//           module.exports.sta= data.status; // initial state
-//         }
-//         console.log("Connection status: ",data.status);
-//       });
-
-//       });
-//           console.log("Sensor Type: ",tag.type);
-//           console.log("Sensor ID: ",tag.id);
-//           // module.exports.type= tag.type;
-//           sensorType=tag.type;
-//         tag.notifySimpleKey(listenForButton); // start the button listener);    
-//         });
-   
-  
-// });
 
 
 module.exports = app;

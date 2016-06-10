@@ -1,4 +1,4 @@
-var ip = "192.168.11.7";
+var ip = "192.168.11.5";
 var socket = io.connect('http://'+ip+':8080');
 
 var connectMenu = $('#type').next();
@@ -12,7 +12,7 @@ $(function () {
     {
         console.log(Number(data.sta));
         $('#type').text(data.type);
-        if(Number(data.sta)!=1) // not connected
+        if(Number(data.sta)!=1 && typeof(data.type)!='undefined') // not connected
         {
             $('.disconnected').on('click',function(){
                 $('#type').next().fadeIn(200);
@@ -25,8 +25,8 @@ $(function () {
             $('.disconnected').off('click');
             $('.disconnected').removeClass('disconnected').addClass('connected');
             $('.connected').attr('src',"connected1small.png");
-
-            $('#type').css("color","rgba(149, 165, 166,.8)");
+            $('.circle2').removeClass('blackC').addClass('pinkC');
+            $('#type').css("color","#25cedd");
             socket.on('tempOut',function(data)
                 {
                     // console.log(data.lux);
@@ -66,15 +66,13 @@ $(function () {
         $('.disconnected').removeClass('disconnected').addClass('connected');
         $('.connected').attr('src',"connected1small.png");
         $('#type').next().fadeOut(200);
-        $('#type').css("color","green");
+        $('#type').css("color","#4c1a51");
         
     });
     // $('#disconnected').on('click',function(){
     //     $('#type').css("color","green");
     // });
-    $('.slider').slider().on('slideStop',function(ev){
-        console.log("min"+$('.slider').slider('getValue'));
-    });
+    
 /**
  * Dark theme for Highcharts JS
  * @author Torstein Honsi
