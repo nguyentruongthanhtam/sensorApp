@@ -26,84 +26,148 @@
 
 var async = require('async');
 var SensorTag = require('sensortag');// sensortag library
-// var MongoClient = require('mongodb').MongoClient;
-// var assert = require('assert');
-// var ObjectId = require('mongodb').ObjectID;
-// var ip = "193.166.93.42";
-// var url = 'mongodb://'+ip+':27017/sensorApp';
-// var www = require('../bin/www');
-// www.io.on('connection',function(socket){
-// 	socket.removeAllListeners();
-// 	socket.on('connect',function(data){
-
-// 		console.log('Connect state : ',data.state);
-// 	});
-// 	console.log("Device: "+tag.type+" with id of: "+tag.id+" connected !");
-// 	enableIrTempMe();
-// })
 
 // listen for tags:
 var status=0;
-
+var tOn,hOn,lOn,gOn;
 SensorTag.discover(function(tag) {
 
 
 	// when you disconnect from a tag, exit the program:
 	tag.on('disconnect', function() {
 		console.log('disconnected!');
+		module.exports.dis = 1;
 		process.exit(0);
 	});
 
+	function disconnectTag()
+	{
+		tag.on('disconnect', function() {
+		console.log('disconnected!');
+		module.exports.dis = 1;
+		process.exit(0);
+	});
+	}
 	function connectAndSetUpMe() {			// attempt to connect to the tag
      console.log('connectAndSetUp');
      tag.connectAndSetUp(enableIrTempMe);		// when you connect, call enableIrTempMe
-   
+
    }
 
-   function enableIrTempMe() {		// attempt to enable the IR Temperature sensor
-     console.log('enableIRTemperatureSensor');
+   function enableIrTempMe(tempON,humiON,luxON,gyroON) {		// attempt to enable the IR Temperature sensor
+     // console.log('enableIRTemperatureSensor');
      // when you enable the IR Temperature sensor, start notifications:
      // tag.enableIrTemperature();
-     tag.enableHumidity(tag.enableLuxometer(tag.enableIrTemperature(notifyMe)));
+     if(tempON)
+		{
+			console.log("Temperature sensor is enabled!");
+			tag.enableIrTemperature();
+		}
+		if(humiON)
+		{
+			console.log("Humidity sensor is enabled!");
+			tag.enableHumidity();
+		}
+		if(luxON)
+		{	
+			console.log("Luxometer sensor is enabled!");
+			tag.enableLuxometer();
+		}
+		if(gyroON)
+		{
+			console.log("Gyroscope sensor is enabled!");
+			tag.enableGyroscope();
+		}
      
 
    }
-
-	function notifyMe() {
+	 function disableSensors() {		// disable all sensors
+     tag.disableHumidity(tag.disableLuxometer(tag.disableIrTemperature(tag.disableGyroscope())));
+		 console.log("Disable all sensors!!!");
+		 tag.disconnect();
+		 // disconnectTag();
+   }
+	function notifyMe(tempON,humiON,luxON,gyroON) {
+		console.log('Sensor '+tag.type+' is connected!');
+		console.log('Device\'s ID detected: '+tag.id);
+		console.log('--------------------------------');
 		console.log('Services have started !...');
 		console.log('Humidity sensor Enabled !...');
 		console.log('Temperature sensor Enabled !...');
 		console.log('Luxometer sensor Enabled!...');
+		console.log('--------------------------------');
+		console.log('--------------------------------');
+		console.log('');
 		tag.unnotifySimpleKey();
-		tag.notifyIrTemperature(tag.setIrTemperaturePeriod(1000,listenForTempReading));
-		tag.notifyHumidity(tag.setHumidityPeriod(1000,listenForHumidity));
-		tag.notifyLuxometer(tag.setLuxometerPeriod(1000,listenForLuxometer));
-
+		if(tempON)
+		{
+			tag.notifyIrTemperature(tag.setIrTemperaturePeriod(1000,listenForTempReading));
+		}
+		if(humiON)
+		{
+			tag.notifyHumidity(tag.setHumidityPeriod(1000,listenForHumidity));
+		}
+		if(luxON)
+		{	
+			tag.notifyLuxometer(tag.setLuxometerPeriod(1000,listenForLuxometer));
+		}
+		if(gyroON)
+		{
+			tag.notifyGyroscope(tag.setGyroscopePeriod(1000,listenForGyroscope));
+		}
 		// console.log('Accelerometer sensor Enabled!...');
 		// tag.notifyAccelerometer(tag.setAccelerometerPeriod(1000, listenForAccelerometer));
 
    }
    function listenForAccelerometer(){
-   		// Listen for Luxometer 
+   		// Listen for Luxometer
    		tag.on('accelerometerChange', function(x, y, z){
+   			console.log('Accelerometer:');
    			console.log('x: ',x.toFixed(1));
    			console.log('y: ',y.toFixed(1));
    			console.log('z: ',z.toFixed(1));
    			module.exports.acc = x.toFixed(1) +" | "+ y.toFixed(1)+ " | " + z.toFixed(1);
    			// module.exports.acc = (Number(x.toFixed(1))+ Number(y.toFixed(1))+ Number(z.toFixed(1))).toFixed(1);
    		});
-   		
+
 
    	}
    function listenForLuxometer(){
-   		// Listen for Luxometer 
+   		// Listen for Luxometer
    		tag.on('luxometerChange', function(lux){
    			console.log('lux value = ',lux);
    			module.exports.lux = lux.toFixed(1);
    		});
    }
 
+   function listenForGyroscope(){
+   		// Listen for Luxometer
+			var tempX,tempY,tempZ,state;
 
+   		tag.on('gyroscopeChange', function(x,y,z){
+   			console.log('Gyroscope:');
+   			console.log('x: ',x.toFixed(1));
+   			console.log('y: ',y.toFixed(1));
+   			console.log('z: ',z.toFixed(1));
+
+   			module.exports.gyro = x.toFixed(1) +" | "+ y.toFixed(1)+ " | " + z.toFixed(1);
+				if(x.toFixed(1)-tempX>0.8)
+				{
+					state = 1;
+				}
+				else if (x.toFixed(1)-tempX<-0.6) {
+					state = 2;
+
+				}
+				else {
+						state = 0;
+				}
+				module.exports.state = state;
+				tempX = x.toFixed(1);
+				tempY = y.toFixed(1);
+				tempZ = z.toFixed(1);
+   		});
+   }
 
    // When you get an accelermeter change, print it out:
 	function listenForTempReading() {
@@ -116,8 +180,8 @@ SensorTag.discover(function(tag) {
 
 	   });
 	}
-	
-   
+
+
    	// Get data from Humidity Sensor ( + Temperature )
 	function listenForHumidity() {
 		tag.on('humidityChange', function(temperature, humidity) {
@@ -126,8 +190,8 @@ SensorTag.discover(function(tag) {
 	     module.exports.humi= humidity.toFixed(1);
 	     var intemp = temperature.toFixed(1);
 	     var inhumid = humidity.toFixed(1);
-	    
-		
+
+
 	   });
 	}
 	// when you get a button change, print it out:
@@ -151,48 +215,42 @@ SensorTag.discover(function(tag) {
 	   });
 	}
 
-
- //  });
 	// Now that you've defined all the functions, start the process:
 	tag.connectAndSetUp(
 		function(){
-			// module.exports.status = status;
-			// io.on('connection',function(socket){
-			// socket.removeAllListeners();
-			// socket.on('custom',function(data){
-			// // console.log('Connect state : ',data.status);
-			// if(status==0)
-			// {
-			var intervalID=setInterval(function(){
+			var intervalID=setInterval(function()
+			{
 					console.log("Check status: ",status);
 							if(status==1)
 							{
-							 	enableIrTempMe();// connected signal
+								notifyMe(tOn,hOn,lOn,gOn);
+							 	enableIrTempMe(tOn,hOn,lOn,gOn);// connected signal
 								clearInterval(intervalID);
-							 	
-							}
-							
-						},1000);
-
-			module.exports.sta = status;
-
-			// }
-			// 	console.log("Connection status: ",data.status);
-			// });
-
-			// });
+								var secondIntervalID = setInterval(function(){
+									if(status == 2)
+									{
+										disableSensors();
+										clearInterval(secondIntervalID);
+									}
+								},1000);
+							}				
+			},1000);
         	console.log("Sensor Type: ",tag.type);
         	console.log("Sensor ID: ",tag.id);
-        	
+			module.exports.sta = status;
         	module.exports.type= tag.type;
-     		tag.notifySimpleKey(listenForButton); // start the button listener);   	
+			tag.notifySimpleKey(listenForButton); // start the button listener);
         });
-	 
+
 });
-	module.exports= function(s)
+	module.exports= function(s,tempOn,humiOn,luxOn,gyroOn)
 {
 	status=s;
-	console.log("Check status: ",status);
-	// if(s == 1)
-	// 	enableIrTempMe();// connected signal
+	tOn = tempOn;
+	hOn = humiOn;
+	lOn = luxOn;
+	gOn = gyroOn;
+	
+	
 }
+	
