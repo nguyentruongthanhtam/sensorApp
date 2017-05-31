@@ -36,9 +36,7 @@ var statusSensor;
 
  }
 $(function () {
-        
-    $('select').material_select();
-    $('.button-collapse').sideNav();
+  $('.button-collapse').sideNav();
     socket.on('signal',function(data)
     {
         // console.log(Number(data.sta));
@@ -597,7 +595,7 @@ Highcharts.theme = {
                    }
                },
                title: {
-                   text: 'Live Light Level Graph'
+                   text: 'Live Door State Graph'
                },
                xAxis: {
                    type: 'datetime',

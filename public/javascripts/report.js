@@ -1,20 +1,19 @@
 var ip = "192.168.0.101";
-var socket = io.connect('http://'+ip+':8080');
+// var socket = io.connect('http://localhost:8080');
 var value={'name':'','type':'','unit':''};
-
-$(function () {
-	function createChart()
+var chart;
+function createChart()
 {
-	Highcharts.setOptions({
-    	global: {
-        	useUTC: false
-    	}
-		});
-	Highcharts.createElement('link', {
-	   href: 'https://fonts.googleapis.com/css?family=Unica+One',
-	   rel: 'stylesheet',
-	   type: 'text/css'
-	}, null, document.getElementsByTagName('head')[0]);
+  Highcharts.setOptions({
+      global: {
+          useUTC: false
+      }
+    });
+  Highcharts.createElement('link', {
+     href: 'https://fonts.googleapis.com/css?family=Unica+One',
+     rel: 'stylesheet',
+     type: 'text/css'
+  }, null, document.getElementsByTagName('head')[0]);
 
 Highcharts.theme = {
    colors: ["#2b908f", "#90ee7e", "#f45b5b", "#7798BF", "#aaeeee", "#ff0066", "#eeaaee",
@@ -215,15 +214,15 @@ Highcharts.theme = {
    maskColor: 'rgba(255,255,255,0.3)'
 };
 
-
-
 }
+$(function () {
 
-socket.once('date',function(dataFromSocket)
-	{
-		createChart();
-		Highcharts.setOptions(Highcharts.theme);
-		var chart = new Highcharts.StockChart({
+    $('select').material_select();
+    $('.button-collapse').sideNav();
+
+    createChart();
+    Highcharts.setOptions(Highcharts.theme);
+    chart = new Highcharts.stockChart({
         chart: {
                 zoomType: 'x',
                 renderTo : 'container',
@@ -238,7 +237,8 @@ socket.once('date',function(dataFromSocket)
                         'Click and drag in the plot area to zoom in' : 'Pinch the chart to zoom in'
             },
             xAxis: {
-                type: 'datetime'
+                type: 'datetime',
+                // tickInterval: 4,
             },
             yAxis: {
                 title: {
@@ -250,23 +250,23 @@ socket.once('date',function(dataFromSocket)
             },
             loading:
             {
-            	style: {
-						position: 'absolute',
-						backgroundColor: 'white',
-						opacity: 0.7,
-						textAlign: 'center'
-				}
+              style: {
+            position: 'absolute',
+            backgroundColor: 'white',
+            opacity: 0.7,
+            textAlign: 'center'
+        }
 
             },
             exporting:{
-            	allowHTML: true,
-            	buttons: {
-            		contextButton: {
-            			enabled: true,
-            			align: "right",
+              allowHTML: true,
+              buttons: {
+                contextButton: {
+                  enabled: true,
+                  align: "right",
 
-            		}
-            	}
+                }
+              }
             },
             plotOptions: {
                 area: {
@@ -297,135 +297,142 @@ socket.once('date',function(dataFromSocket)
             },
 
             series: [{
-    						turboThreshold:0,
+                turboThreshold: 0,
                 data: [],
+                
                 dataGrouping: {
                     enabled: true
                 }
             }]
         });
-  		chart.showLoading();
-		chart.series[0].setData(dataFromSocket.points);
-		chart.hideLoading();
-		value.type = dataFromSocket.type;
-switch(value.type)
-{
-	case "temp":
-	chart.setTitle({
-    	text:"Temperature Record Chart"
-});
-	chart.yAxis[0].update({
-        title:{
-        text: "\xB0C"
+      chart.showLoading("choose day to report...");
+     $('.submitBtn').on('click',function(e)
+     {
+      e.preventDefault();
+      var date = $('#dateChoice').val().split('/');
+      var type = $('#typeChoice').val();
+      var convertedDate = date[0] + date[1] + date[2];
+      $.ajax({
+        type: 'GET',
+        url:  '/sample',
+        data: {dates : convertedDate,types : type},
+        dataType: 'json',
+        })
+          .done(function(database){
+          console.time();
+          // console.log(database);
+          chart.series[0].setData(database,false,false,false);
+          chart.redraw();
+          chart.hideLoading();
+          console.timeEnd();    
+        
+      });           
+        switch(type)
+        {
+          case "temp":
+          chart.setTitle({
+          text:"Temperature Record Chart"
+          });
+          chart.yAxis[0].update({
+          title:{
+          text: "\xB0C"
+          }
+          });
+          chart.series[0].update({
+          
+          lineWidth: 2,
+          marker:{
+            enabled: false,
+            radius:2
+          },
+          states:{
+            hover: {
+              lineWidthPlus:1
+            }
+          }
+          });
+          break;
 
+          case "humi":
+          chart.setTitle({
+          text:"Humidity Record Chart"
+          });
+          chart.yAxis[0].update({
+          title:{
+          text: "%H"
+          }
+          });
+          chart.series[0].update({
+          
+          lineWidth: 2,
+          marker:{
+            enabled: false,
+            radius:2
+          },
+          states:{
+            hover: {
+              lineWidthPlus:1
+            }
+          }
+          });
+          break;
 
-        }
-    });
+          case "lux":
+          chart.setTitle({
+          text:"Light Level Record Chart"
+          });
+          chart.yAxis[0].update({
+          title:{
+          text: "lux"
+          }
+          });  
+          chart.series[0].update({
+          
+          lineWidth: 2,
+          marker:{
+            enabled: false,
+            radius:2
+          },
+          states:{
+            hover: {
+              lineWidthPlus:1
+            }
+          }
+          });
+          break;
 
-    break;
+          case "state":
+          chart.setTitle({
+          text:"Door state Record Chart"
+          });
+          chart.yAxis[0].update({
+          title:{
+          text: "state"
+          }
+          });
+          chart.series[0].update({
+          rangeSelector:{
+            selected: 1
+          },
+          lineWidth: 0,
+          marker:{
+            enabled: true,
+            radius:2
+          },
+          states:{
+            hover: {
+              lineWidthPlus:0
+            }
+          }
+          });
 
-    case "humi":
-    chart.setTitle({
-    	text:"Humidity Record Chart"
-});
-    chart.yAxis[0].update({
-        title:{
+          break;
+        }   
+      
+      });
 
-        text: "%H"
-        }
-    });
-    break;
-
-    case "lux":
-   chart.setTitle({
-    	text:"Light Level Record Chart"
-});
-    chart.yAxis[0].update({
-        title:{
-
-        text: "lux"
-        }
-    });
-
-    break;
-		case "state":
-   chart.setTitle({
-    	text:"Door state Record Chart"
-});
-    chart.yAxis[0].update({
-        title:{
-        text: "state"
-        }
-    });
-		chart.series[0].update({
-			rangeSelector:{
-				selected: 2
-			},
-			lineWidth: 0,
-			marker:{
-				enabled: true,
-				radius:3
-			},
-			states:{
-				hover: {
-					lineWidthPlus:0
-				}
-			}
-		});
-    break;
-}
+  
+    
  });
 
-function addZero(i) {
-    if (i < 10) {
-        i = "0" + i;
-    }
-    return i;
-}
 
-
-// Apply the theme
-
-
-// chart.showLoading();
-// var type="";
-// socket.removeAllListeners();
-// socket.once('date',function(dataFromSocket)
-// 	{
-
-// 		// fetchData = (JSON.parse(JSON.stringify(data.entry)));
-// 		// myFunction(data);
-// 		console.log("data length...." + dataFromSocket.entry.length);
-// 		function addData() {
-// 			var data = [];
-
-//     						console.log("data received ...." + dataFromSocket);
-//     						for (var i = 0; i < dataFromSocket.entry.length; i++) {
-//     				// 			console.log("data received ...." + timestamp(dataFromSocket.entry[i]._id).full);
-// 								// console.log("data received ...." + dataFromSocket.entry[i]);
-// 								console.log("data type chosen: "+dataFromSocket.type);
-// 								switch(dataFromSocket.type)
-// 							{
-// 								case "temp":
-// 									type=dataFromSocket.entry[i].temp;
-// 									break;
-// 								case "humi":
-// 									type=dataFromSocket.entry[i].humi;
-// 									break;
-// 								case "lux":
-// 									type=dataFromSocket.entry[i].lux;
-// 									break;
-// 							}
-// 								data.push({
-// 		                  			x: timestamp(dataFromSocket.entry[i]._id).full,
-// 		                  			y: Number(type)
-// 		                  		});
-//     						}
-//     		// data.sort();
-//             return data;
-// 		};
-
-// 	chart.series[0].setData(addData());
-// 	chart.hideLoading();
-// 	});
-});

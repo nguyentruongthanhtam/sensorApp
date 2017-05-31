@@ -2,14 +2,47 @@ extends layout
 block ref
 	link(rel='stylesheet', href='/stylesheets/datestyle.css')
 	script(src='/javascripts/report.js',type="text/javascript")
-	script(src='/stylesheets/bower_components/highcharts/highstock.js',type="text/javascript")
-	script(src='/stylesheets/bower_components/highcharts/modules/exporting.js',type="text/javascript")
+	script(src='https://code.highcharts.com/stock/highstock.js',type="text/javascript")
+	script(src='https://code.highcharts.com/stock/modules/exporting.js',type="text/javascript")
 block nav
-	div.container
-	ul.nav.nav-tabs.nav-pills(role="tablist")
-		li(role="presentation")
-			a(href="http://192.168.11.8:8080/dashboard",aria-controls="home",role="pill").navHome Home
+	ul.right.hide-on-med-and-down
+		li
+			a(href="/") Home
+
+	ul#mobile.side-nav
+		li
+			a(href="/") Home
+
 block content
+
 	div.container
-		h1.name Records of #{day}
-		div#container(style="min-width: 310px; height: 400px; margin: 0 auto;backgound-color: blue")
+		div.row
+			div.cyan.darken-3.col.white-text.s12.m12.l12.formData
+				form.row(action="/sample",method="get",role='form')
+					.input-field.col.s12.m6.l6
+						select#dateChoice(name="dateForm")
+							each item, l in datelist
+								option(value="#{item.name}") #{item.name}
+						label.white-text(for="dateForm") date
+					.input-field.col.s12.m6.l6   
+						select#typeChoice(name="typeForm")
+							option(value='temp') Temperature
+							option(value='humi') Humidity
+							option(value='lux') Light Level
+							option(value='state') State
+						label.white-text(for="typeForm") type
+					//- .input-field.col.s12.m6.l3                        
+					//- 	input(name="hourF",type="text").validate
+					//- 	label.white-text(for="hourF") From
+					//- .input-field.col.s12.m6.l3
+					//- 	input(name="hourT",type="text").validate
+					//- 	label.white-text(for="hourF") To
+					.input-field.col.s12.m12.l12.center
+						button.btn.btn-default.submitBtn(type="submit",name="submitHour",value="submit") Show
+
+		div#container.col.s12.m12.l12(style="min-width: 310px; height: 400px; margin: 0 auto;backgound-color: blue")
+	script.
+		
+		$(function () {	
+
+		});

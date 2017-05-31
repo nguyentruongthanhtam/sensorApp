@@ -12,7 +12,7 @@
     "express": "~4.13.1",
     "highcharts": "^4.2.3",
     "jade": "~1.11.0",
-    "mongoskin": "~1.4.13",
+    "mongodb": "^2.2.27",
     "morgan": "~1.6.1",
     "serve-favicon": "~2.3.0"
   }

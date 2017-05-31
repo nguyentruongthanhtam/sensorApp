@@ -5,7 +5,7 @@ html(lang='en')
     link(rel='stylesheet', href='/stylesheets/Hover/css/hover-min.css')
     //- link(rel='stylesheet', href='/bootstrap/css/bootstrap.css')
     //- link(rel='stylesheet', href='/bootstrap/css/bootstrap-theme.css')
-    script(src='/stylesheets/bower_components/jquery/dist/jquery.min.js')
+    script(src='https://code.jquery.com/jquery-2.2.4.min.js')
     //- script(src='/bootstrap/js/bootstrap.js')
     
     link(rel="stylesheet",href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.8/css/materialize.min.css")
@@ -19,5 +19,11 @@ html(lang='en')
     meta(name='viewport', content='width=device-width, initial-scale=1.0')
     block ref
   body
-    block nav
+
+    nav
+        .nav-wrapper
+            a.button-collapse(data-activates="mobile")
+                i.medium.material-icons menu
+            a.brand-logo.center sensorApp
+            block nav
     block content

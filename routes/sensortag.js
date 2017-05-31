@@ -150,17 +150,18 @@ SensorTag.discover(function(tag) {
    			console.log('y: ',y.toFixed(1));
    			console.log('z: ',z.toFixed(1));
 
-   			module.exports.gyro = x.toFixed(1) +" | "+ y.toFixed(1)+ " | " + z.toFixed(1);
+   		module.exports.gyro = x.toFixed(1) +" | "+ y.toFixed(1)+ " | " + z.toFixed(1);
 				if(x.toFixed(1)-tempX>0.8)
 				{
 					state = 1;
 				}
-				else if (x.toFixed(1)-tempX<-0.6) {
-					state = 2;
-
-				}
-				else {
-						state = 0;
+				// else if (x.toFixed(1)-tempX<-0.6) 
+				// {
+				// 	state = 2;
+				// }
+				else 
+				{
+					state = 0;
 				}
 				module.exports.state = state;
 				tempX = x.toFixed(1);
@@ -176,8 +177,6 @@ SensorTag.discover(function(tag) {
 	    console.log('\tAmbient Temp = %d deg. C', ambientTemp.toFixed(1));
 	    var intemp = ambientTemp.toFixed(1);
 	    module.exports.temp= ambientTemp.toFixed(1);
-
-
 	   });
 	}
 
@@ -190,8 +189,6 @@ SensorTag.discover(function(tag) {
 	     module.exports.humi= humidity.toFixed(1);
 	     var intemp = temperature.toFixed(1);
 	     var inhumid = humidity.toFixed(1);
-
-
 	   });
 	}
 	// when you get a button change, print it out:
@@ -220,7 +217,7 @@ SensorTag.discover(function(tag) {
 		function(){
 			var intervalID=setInterval(function()
 			{
-					console.log("Check status: ",status);
+					// console.log("Check status: ",status);
 							if(status==1)
 							{
 								notifyMe(tOn,hOn,lOn,gOn);

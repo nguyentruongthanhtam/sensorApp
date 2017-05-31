@@ -7,19 +7,11 @@ var bodyParser = require('body-parser');
 // database inported library
 var mongo = require('mongodb');
 var MongoClient = require('mongodb').MongoClient;
-// var monk = require('monk');
-// var db = monk('192.168.11.7:27017/sensorApp');
+var compression = require('compression');
 var assert = require('assert');
 var ObjectId = require('mongodb').ObjectID;
 var ip = "192.168.0.101";
-// var url = 'mongodb://'+ip+':27017/sensorApp';
-
 var url = 'mongodb://tam:123456@ds013599.mlab.com:13599/niin';
-// var jsdom = require('jsdom').jsdom;
-//  var document = jsdom('<html></html>', {});
-//  var window = document.defaultView;
-//  var $ = require('jquery')(window);
-
 var db;
 var collection;
 var sensortag = require('./routes/sensortag');
@@ -35,8 +27,8 @@ var output,chosenType,chooseDate,chosenHourF,chosenHourT;
 var io = require('socket.io')(server);
 var gDate ={d:"",t:"",full:"",h:0,m:0,s:0};
 var sigTemp,sigHumi,sigLux,sigGyro;
-
-getDayTime(gDate);
+var points;
+// var mongoexport = require('./routes/outout');
 
 server.listen(port);
 server.on('error', onError);
@@ -45,13 +37,15 @@ server.on('listening', onListening);
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(compression());
 MongoClient.connect(url,function(err,database)
     {
-      console.log("DB connected");
+      getDayTime(gDate);
       db = database;
-      db.collectionNames("s"+gDate.d,function(err,result)
+      db.collection("s"+gDate.d,function(err,result)
       {
-        // console.log(result.length);
+        console.log("DB connected");
+        if(err) console.log(err);
         if(result.length==0)
         {
           db.createCollection(("s"+gDate.d),function(err,result)
@@ -66,21 +60,23 @@ MongoClient.connect(url,function(err,database)
   
   setInterval(function()
   {
-      if(typeof(sensortag.temp)!="undefined")
-      {
-          console.log("Adding value to database...");
           insertDocumentExplicit(db,function(err){
             if(err)
+            {
+              console.log("can not add to db!");
               console.log(err);
+              
+            }
             else
               console.log("added to db!!!");
-      });
-          }
+          });
+         
   },1000);
   
   io.on('connection',function(socket)
       {
           socket.removeAllListeners();
+          
           socket.on('custom',function(data)
           {
               sensortag(Number(data.status),data.tempOn,data.humiOn,data.luxOn,data.gyroOn);
@@ -102,12 +98,7 @@ MongoClient.connect(url,function(err,database)
               console.log("turn = " , data.turn);
               console.log("Turning off sensors.... ");
           });
-          socket.emit('date',{
-            points : output,
-            type : chosenType
-          });
-          console.log("chosen type: "+ chosenType);
-          console.log("Sending value from server... "+ sensortag.type);
+          
           setInterval(function(){
                 socket.emit('signal',{
                       sta: sStatus,
@@ -125,6 +116,7 @@ MongoClient.connect(url,function(err,database)
                       gyro: sensortag.gyro,
                       state: sensortag.state
                     });
+                
             
           },1000);
           if(sensortag.dis)
@@ -135,30 +127,23 @@ MongoClient.connect(url,function(err,database)
       });
 
 sensortag.status = sStatus;
-app.get('/',function(req, res, next) {
-  res.render('index', { title: 'Express',});
-});
+// app.get('/',function(req, res, next) {
+//   res.render('index', { title: 'Express',});
+// });
 
 
 // ------------- Dashboard controller
 
 
-app.get('/dashboard', function(req, res) {
+app.get('/', function(req, res) {
   res.statusCode = 200;
   console.log("Sending value from server... "+sensortag.type);
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  db.collectionNames(function(err, items) {
-      
-        // console.log("substring of collection name: "+t[1]+t[2]+"/"+t[3]+t[4]+"/"+t[5]+t[6]+t[7]+t[8]);
-  for (item of items) {
-    item.name=reformatDate(item);
-  }
   res.render('dashboard', {
-            "datelist" : items
+            
             });
-         
-        });
+
 });
 
 function reformatDate(item)
@@ -167,100 +152,83 @@ function reformatDate(item)
   result = t[1]+t[2]+"/"+t[3]+t[4]+"/"+t[5]+t[6]+t[7]+t[8];
   return result;
 }
-// ------------- Report controller
-app.post('/report',function(req,res)
-{
-  var timestamp = function(objId)
-    {
-      var output = {full:"" , timeOnly:""};
-      var t = objId.toString().substring(0,8);
-      var d = new Date(parseInt (t,16) * 1000);
-      output.full = d.getTime();
-      return output;
 
-    }
-  console.log("choosen date called");
-  function exportData(array,option)
-    {
-      var yValue;
-        var data = [];
-          for(var i=0;i<array.length;i++)
-        {
-            switch(option)
+app.get('/sample',function(req,res){
+
+      console.time();
+    var chosenDate = req.query.dates;
+    var chosenType = req.query.types;
+    // var t= chosenDate.split("/");
+    // convertedChosenDate = t[0]+t[1]+t[2];
+    console.log("receive" + chosenDate +" "+chosenType );
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+             
+      collection =db.collection("s"+chosenDate);
+      switch(chosenType)
+       {
+        case "temp":
+
+            collection.find({},{"time": true,"temp":true,'_id':false}).toArray(function(err,items)
             {
-                case 1:
-                yValue=array[i].temp;
-                break;
+              points=exportData(items,1);
+              res.json(points);
+              // res.json(items);
+              // db.close();
+            });
+            break;
 
-                case 2:
-                yValue=array[i].humi;
-                break;
+        case "humi":
+            collection.find({},{"time": true ,"humi":true}).toArray(function(err,items)
+            {
+              points=exportData(items,2);
+              res.json(points);
+              // db.close();
+            });
+            break;
 
-                case 3:
-                yValue=array[i].lux;
-                break;
+        case "lux":
+            collection.find({},{"time": true ,"lux":true}).toArray(function(err,items)
+            {
+              points=exportData(items,3);
+              res.json(points);
+              // db.close();
+            });
+            break;
 
-                case 4:
-                yValue=array[i].state;
-                break;
-            }
-            data.push({
-                            x: timestamp(array[i]._id).full,
-                            y: Number(yValue)
-                          });
-        }
-       return data;
-
-    }
-  res.statusCode=200;
-  chosenDate = req.body.dateForm;
-  chosenType = req.body.typeForm;
-  chosenHourF = Number(req.body.hourF);
-  chosenHourT = Number(req.body.hourT);
-
-  if(chosenHourF==0 && chosenHourT==0)
-  {
-    chosenHourF=0;
-    chosenHourT=23;
-  }
-  var t= chosenDate.split("/");
-  chosenDate = t[0]+t[1]+t[2];
-  console.log("from: " + chosenHourF + "to: " +  ' on:' + chosenDate);
-
-  collection =db.collection("s"+chosenDate);
-  // find entry in specific time period
-
-   switch(chosenType)
-   {
-    case "temp":
-        collection.find({hour:{$gte:chosenHourF,$lte:chosenHourT}} , {temp:1}).toArray(function(err,items){
-         output=exportData(items,1);
-        });
-        break;
-
-    case "humi":
-        collection.find({hour:{$gte:chosenHourF,$lte:chosenHourT}} , {humi:1}).toArray(function(err,items){
-        output=exportData(items,2);
-        });
-        break;
-
-    case "lux":
-        collection.find({hour:{$gte:chosenHourF,$lte:chosenHourT}} , {lux:1}).toArray(function(err,items){
-        output=exportData(items,3);
-        });
-        break;
-
-    case "state":
-        collection.find({hour:{$gte:chosenHourF,$lte:chosenHourT}} , {state:1}).toArray(function(err,items){
-        output=exportData(items,4);
-        });
-        break;
-   }
-
-    res.render('report',
-    {
-      "day":chosenDate
-    });
+        case "state":
+            collection.find({},{"time":true,"state":true}).toArray(function(err,items)
+            {
+              points=exportData(items,4);
+              res.json(points);
+              // db.close();
+            });
+            break;
+       }
+  res.statusCode = 200;
+    console.timeEnd();
+ 
+   
+});
+// ------------- Report controller
+app.get('/report',function(req,res)
+{
+  // db==null;
+  res.statusCode = 200;
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+   
+    db.listCollections().toArray(function(err, items) {
+      for (item of items) 
+      {
+        item.name=reformatDate(item);
+      }
+      res.render('report',
+      {
+        "datelist" : items,
+        
+      });
+     });   
 
   // send data from Database to Date List Page to display in graph
 });
@@ -309,28 +277,30 @@ app.use(function(err, req, res, next) {
 // database
 var insertDocumentExplicit = function(db,callback) {
        getDayTime(gDate);
-       if(sensortag.temp!=null && sensortag.humi!=null && sensortag.lux!=null)
+       if(sensortag.temp==null && sensortag.humi==null && sensortag.lux==null)
        {        }
         else
         {
           db.collection("s"+gDate.d).insert
           ({
-                "hour": gDate.h,
-                "minute": gDate.m,
-                "second": gDate.s,
-                "temp": sensortag.temp,
-                "humi": sensortag.humi,
-                "lux": sensortag.lux,
-                "state": sensortag.state
+                "time": new Date().getTime(),
+                "temp": Number(sensortag.temp),
+                "humi": Number(sensortag.humi),
+                "lux": Number(sensortag.lux),
+                "state": Number(sensortag.state)
           }, function(err,result)
-            {
-              if(err)
+          {
+              if(err){
                 console.log("Error: "+err);
-              callback(result);
-            });
-
+                
+                }
+              else
+              {
+                console.log("Added");
+                
+              }
+          });
         }
-
     };
 
    //---------------
@@ -376,7 +346,50 @@ function normalizePort(val) {
 
   return false;
 }
+     
+  var timestamp = function(objId)
+    {
+      var output = {full:"" , timeOnly:""};
+      var t = objId.toString().substring(0,8);
+      var d = new Date(parseInt (t,16) * 1000);
+      output.full = d.getTime();
+      return output;
 
+    }
+  function exportData(array,option)
+    {
+      var xValue,yValue;
+      var data = [];
+        for(var i=0;i<array.length;i++)
+      { 
+        xValue = array[i].time;
+
+          switch(option)
+          {
+              case 1:
+              yValue=array[i].temp;
+              break;
+
+              case 2:
+              yValue=array[i].humi;
+              break;
+
+              case 3:
+              yValue=array[i].lux;
+              break;
+
+              case 4:
+              yValue=array[i].state;
+              break;
+          }
+          data.push({
+                          // x: timestamp(array[i]._id).full,
+                          x: xValue,
+                          y: yValue
+                        });
+      }
+     return data;
+    }
 /**
  * Event listener for HTTP server "error" event.
  */
